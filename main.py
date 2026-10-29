@@ -151,7 +151,7 @@ def main(page: ft.Page):
         on_submit=lambda event: add_task(event),
     )
     assignment_input = ft.TextField(
-        hint_text="課題名（例：数学ワーク p.10）",
+        hint_text="自分の課題（例：数学ワーク p.10）",
         expand=True,
         border_radius=6,
         border_color="#D4DED5",
@@ -668,7 +668,7 @@ def main(page: ft.Page):
     assignment_composer = ft.Container(
         content=ft.Column(
             [
-                ft.Text("課題を追加", size=16, color=INK, weight=ft.FontWeight.W_600),
+                ft.Text("自分の課題を追加", size=16, color=INK, weight=ft.FontWeight.W_600),
                 ft.Row(
                     [
                         assignment_input,
@@ -936,9 +936,9 @@ def main(page: ft.Page):
             page.add(app_container)
             render()
         elif section == "assignments":
-            page.title = "課題の確認 | StudyGrow"
-            section_title.value = "課題の確認"
-            section_description.value = "課題を登録し、完了状況を確認しましょう。"
+            page.title = "課題 | StudyGrow"
+            section_title.value = "課題"
+            section_description.value = "自分の課題を追加し、完了状況を管理しましょう。"
             page.controls.clear()
             page.add(app_container)
             render_assignments()
@@ -1215,7 +1215,7 @@ def main(page: ft.Page):
     home_cards = ft.ResponsiveRow(
         [
             make_home_card("01", ft.Icons.EDIT_NOTE, "学習計画", "今日やることを整理する", "plan"),
-            make_home_card("02", ft.Icons.CHECKLIST, "課題の確認", "未完了の課題をチェック", "assignments"),
+            make_home_card("02", ft.Icons.CHECKLIST, "課題", "自分の課題を追加・管理する", "assignments"),
             make_home_card("03", ft.Icons.CALENDAR_MONTH, "カレンダー", "月ごとの日付を確認する", "calendar"),
         ],
         spacing=12,
