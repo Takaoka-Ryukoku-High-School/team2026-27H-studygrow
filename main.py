@@ -8,6 +8,7 @@ import flet as ft
 
 
 DATA_FILE = Path.home() / ".daily_note_tasks.json"
+ASSIGNMENTS_FILE = Path.home() / ".studygrow_assignments.json"
 EVENTS_FILE = Path.home() / ".studygrow_events.json"
 VOCABULARY_FILE = Path.home() / ".studygrow_vocabulary.json"
 GREEN = "#2E6654"
@@ -37,6 +38,30 @@ def load_tasks():
 
 def save_tasks(tasks):
     DATA_FILE.write_text(json.dumps(tasks, ensure_ascii=False, indent=2), encoding="utf-8")
+
+
+def load_assignments():
+    try:
+        assignments = json.loads(ASSIGNMENTS_FILE.read_text(encoding="utf-8"))
+        if isinstance(assignments, list):
+            return [
+                assignment
+                for assignment in assignments
+                if isinstance(assignment, dict)
+                and isinstance(assignment.get("id"), str)
+                and isinstance(assignment.get("text"), str)
+                and isinstance(assignment.get("done"), bool)
+            ]
+    except (OSError, json.JSONDecodeError):
+        pass
+    return []
+
+
+def save_assignments(assignments):
+    ASSIGNMENTS_FILE.write_text(
+        json.dumps(assignments, ensure_ascii=False, indent=2),
+        encoding="utf-8",
+    )
 
 
 def load_events():
@@ -103,6 +128,7 @@ def main(page: ft.Page):
     page.scroll = ft.ScrollMode.AUTO
 
     tasks = load_tasks()
+    assignments = load_assignments()
     events = load_events()
     vocabulary = load_vocabulary()
     current_filter = "all"
@@ -124,6 +150,19 @@ def main(page: ft.Page):
         text_size=15,
         on_submit=lambda event: add_task(event),
     )
+    assignment_input = ft.TextField(
+        hint_text="課題名（例：数学ワーク p.10）",
+        expand=True,
+        border_radius=6,
+        border_color="#D4DED5",
+        focused_border_color=GREEN,
+        bgcolor="#FFFEFA",
+        text_size=15,
+        on_submit=lambda event: add_assignment(event),
+    )
+    assignment_status = ft.Text(size=12, color=MUTED)
+    assignment_list = ft.Column(spacing=0)
+    assignment_count = ft.Text(color=MUTED, size=12)
     calendar_event_input = ft.TextField(
         hint_text="予定を入力",
         expand=True,
@@ -227,6 +266,69 @@ def main(page: ft.Page):
         tasks[:] = [task for task in tasks if not task["done"]]
         persist()
         render()
+
+    def add_assignment(event):
+        text = assignment_input.value.strip()
+        if not text:
+            assignment_status.value = "課題名を入力してください。"
+            assignment_status.color = CORAL
+            page.update()
+            return
+
+        updated_assignments = [
+            {"id": str(uuid4()), "text": text, "done": False},
+            *assignments,
+        ]
+        try:
+            save_assignments(updated_assignments)
+        except OSError:
+            assignment_status.value = "課題を保存できませんでした。書き込み権限をご確認ください。"
+            assignment_status.color = CORAL
+            page.update()
+            return
+
+        assignments[:] = updated_assignments
+        assignment_input.value = ""
+        assignment_status.value = "課題を追加しました。"
+        assignment_status.color = GREEN
+        render_assignments()
+
+    def toggle_assignment(assignment_id):
+        for assignment in assignments:
+            if assignment["id"] == assignment_id:
+                assignment["done"] = not assignment["done"]
+                break
+        try:
+            save_assignments(assignments)
+        except OSError:
+            for assignment in assignments:
+                if assignment["id"] == assignment_id:
+                    assignment["done"] = not assignment["done"]
+                    break
+            assignment_status.value = "課題の状態を保存できませんでした。書き込み権限をご確認ください。"
+            assignment_status.color = CORAL
+            page.update()
+            return
+        render_assignments()
+
+    def delete_assignment(assignment_id):
+        updated_assignments = [
+            assignment
+            for assignment in assignments
+            if assignment["id"] != assignment_id
+        ]
+        try:
+            save_assignments(updated_assignments)
+        except OSError:
+            assignment_status.value = "課題を削除できませんでした。書き込み権限をご確認ください。"
+            assignment_status.color = CORAL
+            page.update()
+            return
+
+        assignments[:] = updated_assignments
+        assignment_status.value = "課題を削除しました。"
+        assignment_status.color = GREEN
+        render_assignments()
 
     def render_vocabulary():
         nonlocal vocabulary_index
@@ -394,12 +496,9 @@ def main(page: ft.Page):
         visible_tasks = [
             task
             for task in tasks
-            if (current_section != "assignments" or not task["done"])
-            and (
-                current_filter == "all"
-                or (current_filter == "active" and not task["done"])
-                or (current_filter == "done" and task["done"])
-            )
+            if current_filter == "all"
+            or (current_filter == "active" and not task["done"])
+            or (current_filter == "done" and task["done"])
         ]
         remaining = sum(not task["done"] for task in tasks)
         completed = len(tasks) - remaining
@@ -446,9 +545,7 @@ def main(page: ft.Page):
 
         if not visible_tasks:
             empty_text = (
-                "未完了の課題はありません。いい調子！"
-                if current_section == "assignments"
-                else "未完了のタスクはありません。いい調子！"
+                "未完了のタスクはありません。いい調子！"
                 if current_filter == "active" and tasks
                 else "完了したタスクはまだありません。"
                 if current_filter == "done" and tasks
@@ -470,6 +567,67 @@ def main(page: ft.Page):
             ]
 
         task_list.controls = rows
+        page.update()
+
+    def render_assignments():
+        remaining = sum(not assignment["done"] for assignment in assignments)
+        assignment_count.value = (
+            f"未完了 {remaining} 件 / 合計 {len(assignments)} 件"
+        )
+        assignment_list.controls = (
+            [
+                ft.Column(
+                    [
+                        ft.Row(
+                            [
+                                ft.Checkbox(
+                                    value=assignment["done"],
+                                    label=assignment["text"],
+                                    expand=True,
+                                    active_color=GREEN,
+                                    label_style=ft.TextStyle(
+                                        color="#929992" if assignment["done"] else INK,
+                                        decoration=(
+                                            ft.TextDecoration.LINE_THROUGH
+                                            if assignment["done"]
+                                            else None
+                                        ),
+                                        size=14,
+                                    ),
+                                    on_change=lambda event, assignment_id=assignment["id"]: toggle_assignment(
+                                        assignment_id
+                                    ),
+                                ),
+                                ft.IconButton(
+                                    icon=ft.Icons.DELETE_OUTLINE,
+                                    icon_color=MUTED,
+                                    tooltip=f"「{assignment['text']}」を削除",
+                                    on_click=lambda event, assignment_id=assignment["id"]: delete_assignment(
+                                        assignment_id
+                                    ),
+                                ),
+                            ],
+                            spacing=8,
+                        ),
+                        ft.Divider(height=1, thickness=1, color="#DEDFD5"),
+                    ],
+                    spacing=0,
+                )
+                for assignment in assignments
+            ]
+            or [
+                ft.Container(
+                    content=ft.Text(
+                        "課題はまだありません。課題名を入力して追加しましょう。",
+                        size=13,
+                        color=MUTED,
+                        text_align=ft.TextAlign.CENTER,
+                    ),
+                    padding=32,
+                    alignment=ft.Alignment.CENTER,
+                )
+            ]
+        )
         page.update()
 
     for key, label in (("all", "すべて"), ("active", "未完了"), ("done", "完了")):
@@ -506,6 +664,48 @@ def main(page: ft.Page):
         ),
         padding=ft.Padding(left=18, right=18, top=8, bottom=8),
         border=ft.Border.only(bottom=ft.BorderSide(1, "#DEDFD5")),
+    )
+    assignment_composer = ft.Container(
+        content=ft.Column(
+            [
+                ft.Text("課題を追加", size=16, color=INK, weight=ft.FontWeight.W_600),
+                ft.Row(
+                    [
+                        assignment_input,
+                        ft.Button(
+                            "追加  ＋",
+                            on_click=add_assignment,
+                            bgcolor=GREEN,
+                            color="white",
+                            height=48,
+                            style=ft.ButtonStyle(shape=ft.RoundedRectangleBorder(radius=5)),
+                        ),
+                    ],
+                    spacing=10,
+                ),
+                assignment_status,
+            ],
+            spacing=10,
+        ),
+        padding=18,
+        bgcolor=GREEN_LIGHT,
+    )
+    assignment_panel = ft.Column(
+        [
+            assignment_composer,
+            ft.Container(
+                content=ft.Column(
+                    [
+                        assignment_count,
+                        assignment_list,
+                    ],
+                    spacing=8,
+                ),
+                padding=ft.Padding.symmetric(horizontal=18, vertical=12),
+            ),
+        ],
+        spacing=0,
+        visible=False,
     )
 
     vocabulary_card_counter = ft.Text(size=12, color=MUTED)
@@ -692,7 +892,7 @@ def main(page: ft.Page):
             ),
             ft.Container(
                 content=ft.Column(
-                    [plan_view_selector, task_panel, vocabulary_panel],
+                    [plan_view_selector, task_panel, vocabulary_panel, assignment_panel],
                     spacing=0,
                 ),
                 width=700,
@@ -724,6 +924,8 @@ def main(page: ft.Page):
         current_filter = "active" if section == "assignments" else "all"
         set_plan_view("tasks", refresh=False)
         plan_view_selector.visible = section == "plan"
+        task_panel.visible = section == "plan"
+        assignment_panel.visible = section == "assignments"
         composer_panel.visible = section == "plan"
         filter_panel.visible = section == "plan"
         if section == "plan":
@@ -736,10 +938,10 @@ def main(page: ft.Page):
         elif section == "assignments":
             page.title = "課題の確認 | StudyGrow"
             section_title.value = "課題の確認"
-            section_description.value = "完了していない課題を確認しましょう。"
+            section_description.value = "課題を登録し、完了状況を確認しましょう。"
             page.controls.clear()
             page.add(app_container)
-            render()
+            render_assignments()
         else:
             page.title = "カレンダー | StudyGrow"
             page.controls.clear()
