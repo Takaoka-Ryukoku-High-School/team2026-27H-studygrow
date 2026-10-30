@@ -174,7 +174,8 @@ def main(page: ft.Page):
         on_submit=lambda event: add_calendar_event(event),
     )
     calendar_event_status = ft.Text(size=12, color=MUTED)
-    calendar_event_list = ft.Column(spacing=0)
+    calendar_event_list = ft.Column(spacing=12, scroll=ft.ScrollMode.AUTO)
+    calendar_selected_date = ft.Text(size=13, color=GREEN)
     vocabulary_word_input = ft.TextField(
         label="英単語",
         expand=True,
@@ -1055,11 +1056,12 @@ def main(page: ft.Page):
             weeks.append(ft.Row(day_cells, spacing=0))
 
         selected_events = [event for event in events if event["date"] == selected_date.isoformat()]
+        calendar_selected_date.value = f"{selected_date.strftime('%Y年%m月%d日')} の予定"
         calendar_event_list.controls = (
             [
                 ft.Row(
                     [
-                        ft.Text(event["text"], expand=True, color=INK, size=14),
+                        ft.Text(f"• {event['text']}", expand=True, color=INK, size=22),
                         ft.IconButton(
                             icon=ft.Icons.DELETE_OUTLINE,
                             icon_color=MUTED,
@@ -1071,7 +1073,7 @@ def main(page: ft.Page):
                 )
                 for event in selected_events
             ]
-            or [ft.Text("この日の予定はありません。", size=13, color=MUTED)]
+            or [ft.Text("この日の予定はありません。", size=18, color=MUTED)]
         )
 
         calendar_panel = ft.Container(
@@ -1103,6 +1105,43 @@ def main(page: ft.Page):
             border=ft.Border.all(1, "#E3E3D9"),
             border_radius=8,
         )
+        calendar_event_bubble = ft.Container(
+            content=ft.Column(
+                [
+                    ft.Text("選択日の予定", size=18, color=INK, weight=ft.FontWeight.W_600),
+                    calendar_selected_date,
+                    ft.Divider(height=1, color="#C8D9CC"),
+                    calendar_event_list,
+                ],
+                spacing=12,
+            ),
+            padding=20,
+            bgcolor=GREEN_LIGHT,
+            border=ft.Border.all(1, "#C8D9CC"),
+            border_radius=20,
+        )
+        viewport_width = page.width or 748
+        calendar_content_width = min(1000, max(272, viewport_width - page.padding * 2))
+        show_calendar_side_by_side = calendar_content_width >= 760
+        if show_calendar_side_by_side:
+            calendar_panel.width = (calendar_content_width - 20) * 0.62
+            calendar_event_bubble.width = (calendar_content_width - 20) * 0.38
+            calendar_event_bubble.height = 460
+            calendar_event_list.height = 350
+            calendar_schedule_layout = ft.Row(
+                [calendar_panel, calendar_event_bubble],
+                spacing=20,
+                vertical_alignment=ft.CrossAxisAlignment.START,
+            )
+        else:
+            calendar_panel.width = calendar_content_width
+            calendar_event_bubble.width = calendar_content_width
+            calendar_event_bubble.height = 300
+            calendar_event_list.height = 190
+            calendar_schedule_layout = ft.Column(
+                [calendar_panel, calendar_event_bubble],
+                spacing=16,
+            )
         calendar_content = ft.Column(
             [
                 ft.TextButton(
@@ -1137,13 +1176,7 @@ def main(page: ft.Page):
                     ],
                     spacing=4,
                 ),
-                calendar_panel,
-                ft.Text(
-                    f"{selected_date.strftime('%Y年%m月%d日')} を選択中",
-                    size=14,
-                    color=GREEN,
-                    weight=ft.FontWeight.W_600,
-                ),
+                calendar_schedule_layout,
                 ft.Row(
                     [
                         calendar_event_input,
@@ -1159,19 +1192,12 @@ def main(page: ft.Page):
                     spacing=10,
                 ),
                 calendar_event_status,
-                ft.Container(
-                    content=calendar_event_list,
-                    padding=ft.Padding.symmetric(horizontal=12),
-                    bgcolor="#FFFEFA",
-                    border=ft.Border.all(1, "#E3E3D9"),
-                    border_radius=8,
-                ),
             ],
-            width=700,
+            width=calendar_content_width,
             spacing=24,
         )
         calendar_container.content = calendar_content
-        calendar_container.width = min(700, max(272, (page.width or 748) - page.padding * 2))
+        calendar_container.width = calendar_content_width
         page.update()
 
     def make_home_card(number, icon, title, description, section):
@@ -1267,7 +1293,10 @@ def main(page: ft.Page):
         workspace_card.width = content_width
         home_container.width = content_width
         home_content.width = content_width
-        calendar_container.width = content_width
+        calendar_container.width = min(1000, max(272, viewport_width - page.padding * 2))
+        if current_section == "calendar":
+            render_calendar()
+            return
         page.update()
 
     page.on_resize = resize_page
