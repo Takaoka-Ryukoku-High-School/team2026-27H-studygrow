@@ -2,6 +2,9 @@ import calendar
 import json
 from datetime import date
 from pathlib import Path
+from urllib.error import HTTPError, URLError
+from urllib.parse import quote
+from urllib.request import Request, urlopen
 from uuid import uuid4
 
 import flet as ft
@@ -119,6 +122,74 @@ def save_vocabulary(vocabulary):
     )
 
 
+def lookup_dictionary(word):
+    url = f"https://api.dictionaryapi.dev/api/v2/entries/en/{quote(word, safe='')}"
+    request = Request(url, headers={"User-Agent": "StudyGrow/1.0"})
+    with urlopen(request, timeout=8) as response:
+        results = json.loads(response.read().decode("utf-8"))
+
+    definitions = []
+    examples = []
+    phonetic = ""
+    if not isinstance(results, list):
+        raise ValueError("辞書データの形式を読み取れませんでした。")
+
+    word_result = None
+    for result in results:
+        if not isinstance(result, dict):
+            continue
+        if word_result is None:
+            word_result = result
+        result_phonetic = result.get("phonetic")
+        if not phonetic and isinstance(result_phonetic, str):
+            phonetic = result_phonetic
+        if not phonetic:
+            phonetics = result.get("phonetics")
+            if isinstance(phonetics, list):
+                phonetic = next(
+                    (
+                        item["text"]
+                        for item in phonetics
+                        if isinstance(item, dict)
+                        and isinstance(item.get("text"), str)
+                        and item["text"].strip()
+                    ),
+                    "",
+                )
+        meanings = result.get("meanings")
+        if not isinstance(meanings, list):
+            continue
+        for meaning in meanings:
+            if not isinstance(meaning, dict):
+                continue
+            part_of_speech = meaning.get("partOfSpeech", "")
+            meaning_definitions = meaning.get("definitions")
+            if not isinstance(meaning_definitions, list):
+                continue
+            for definition in meaning_definitions:
+                if not isinstance(definition, dict):
+                    continue
+                text = definition.get("definition")
+                if isinstance(text, str) and text.strip():
+                    definitions.append(
+                        f"{part_of_speech}: {text}" if part_of_speech else text
+                    )
+                example = definition.get("example")
+                if isinstance(example, str) and example.strip():
+                    examples.append(example.strip())
+
+    if not definitions:
+        raise ValueError("辞書データの形式を読み取れませんでした。")
+
+    result_word = word_result.get("word") if word_result else None
+    return {
+        "word": result_word if isinstance(result_word, str) and result_word else word,
+        "meaning": "\n".join(definitions),
+        "example": examples[0] if examples else "",
+        "phonetic": phonetic,
+    }
+
+
 def main(page: ft.Page):
     page.title = "今日の段取り | ToDo"
     page.theme_mode = ft.ThemeMode.LIGHT
@@ -136,6 +207,7 @@ def main(page: ft.Page):
     current_plan_view = "tasks"
     vocabulary_index = 0
     vocabulary_answer_visible = False
+    dictionary_result = None
     visible_month = date.today().replace(day=1)
     selected_date = date.today()
 
@@ -176,39 +248,18 @@ def main(page: ft.Page):
     calendar_event_status = ft.Text(size=12, color=MUTED)
     calendar_event_list = ft.Column(spacing=12, scroll=ft.ScrollMode.AUTO)
     calendar_selected_date = ft.Text(size=13, color=GREEN)
-    vocabulary_word_input = ft.TextField(
+    dictionary_search_input = ft.TextField(
         label="英単語",
+        hint_text="調べたい英単語を入力",
         expand=True,
         border_radius=6,
         border_color="#D4DED5",
         focused_border_color=GREEN,
         bgcolor="#FFFEFA",
-    )
-    vocabulary_meaning_input = ft.TextField(
-        label="日本語の意味",
-        expand=True,
-        border_radius=6,
-        border_color="#D4DED5",
-        focused_border_color=GREEN,
-        bgcolor="#FFFEFA",
-    )
-    vocabulary_example_input = ft.TextField(
-        label="例文（任意）",
-        expand=True,
-        border_radius=6,
-        border_color="#D4DED5",
-        focused_border_color=GREEN,
-        bgcolor="#FFFEFA",
-    )
-    vocabulary_example_meaning_input = ft.TextField(
-        label="例文の日本語訳（任意）",
-        expand=True,
-        border_radius=6,
-        border_color="#D4DED5",
-        focused_border_color=GREEN,
-        bgcolor="#FFFEFA",
+        on_submit=lambda event: search_vocabulary(event),
     )
     vocabulary_status = ft.Text(size=12, color=MUTED)
+    dictionary_preview = ft.Text(size=14, color=INK, selectable=True)
     vocabulary_review_status = ft.Text(size=12, color=MUTED)
     vocabulary_word_label = ft.Text(size=28, color=INK, weight=ft.FontWeight.W_600)
     vocabulary_meaning_label = ft.Text(size=17, color=GREEN)
@@ -362,7 +413,7 @@ def main(page: ft.Page):
             vocabulary_review_buttons.visible = vocabulary_answer_visible
         else:
             vocabulary_word_label.value = "単語を登録しましょう"
-            vocabulary_meaning_label.value = "英単語と日本語の意味を入力してください。"
+            vocabulary_meaning_label.value = "辞書で英単語を検索して登録できます。"
             vocabulary_example_label.value = ""
             vocabulary_example_label.visible = False
             vocabulary_example_meaning_label.value = ""
@@ -397,23 +448,86 @@ def main(page: ft.Page):
         )
         page.update()
 
-    def add_vocabulary(event):
-        nonlocal vocabulary_index, vocabulary_answer_visible
-        word = vocabulary_word_input.value.strip()
-        meaning = vocabulary_meaning_input.value.strip()
-        if not word or not meaning:
-            vocabulary_status.value = "英単語と日本語の意味を入力してください。"
+    def search_vocabulary(event):
+        nonlocal dictionary_result
+        word = (dictionary_search_input.value or "").strip()
+        dictionary_register_button.visible = False
+        if not word:
+            dictionary_result = None
+            dictionary_preview.value = ""
+            vocabulary_status.value = "調べたい英単語を入力してください。"
             vocabulary_status.color = CORAL
             page.update()
             return
 
-        entry = {"id": str(uuid4()), "word": word, "meaning": meaning, "known": False}
-        example = vocabulary_example_input.value.strip()
-        example_meaning = vocabulary_example_meaning_input.value.strip()
-        if example:
-            entry["example"] = example
-        if example_meaning:
-            entry["example_meaning"] = example_meaning
+        dictionary_result = None
+        dictionary_preview.value = ""
+        vocabulary_status.value = "辞書を検索しています..."
+        vocabulary_status.color = MUTED
+        page.update()
+        try:
+            dictionary_result = lookup_dictionary(word)
+        except HTTPError as error:
+            if error.code == 404:
+                message = "単語が見つかりませんでした。スペルを確認してください。"
+            else:
+                message = f"辞書APIでエラーが発生しました（HTTP {error.code}）。"
+            vocabulary_status.value = message
+            vocabulary_status.color = CORAL
+            page.update()
+            return
+        except URLError:
+            vocabulary_status.value = "辞書APIに接続できません。ネットワークをご確認ください。"
+            vocabulary_status.color = CORAL
+            page.update()
+            return
+        except TimeoutError:
+            vocabulary_status.value = "辞書APIの応答がタイムアウトしました。もう一度お試しください。"
+            vocabulary_status.color = CORAL
+            page.update()
+            return
+        except (json.JSONDecodeError, UnicodeDecodeError, ValueError):
+            dictionary_result = None
+            vocabulary_status.value = "辞書データを読み取れませんでした。もう一度お試しください。"
+            vocabulary_status.color = CORAL
+            page.update()
+            return
+
+        preview_lines = [f"英語の定義:\n{dictionary_result['meaning']}"]
+        if dictionary_result["phonetic"]:
+            preview_lines.insert(0, f"発音: {dictionary_result['phonetic']}")
+        if dictionary_result["example"]:
+            preview_lines.append(f"例文: {dictionary_result['example']}")
+        dictionary_preview.value = "\n\n".join(preview_lines)
+        dictionary_register_button.visible = True
+        vocabulary_status.value = "検索しました。確認して辞書に登録してください。"
+        vocabulary_status.color = GREEN
+        page.update()
+
+    def add_vocabulary(event):
+        nonlocal dictionary_result, vocabulary_index, vocabulary_answer_visible
+        if dictionary_result is None:
+            vocabulary_status.value = "先に英単語を検索してください。"
+            vocabulary_status.color = CORAL
+            page.update()
+            return
+
+        word = dictionary_result["word"]
+        if any(entry["word"].casefold() == word.casefold() for entry in vocabulary):
+            vocabulary_status.value = "この単語はすでに登録されています。"
+            vocabulary_status.color = CORAL
+            page.update()
+            return
+
+        entry = {
+            "id": str(uuid4()),
+            "word": word,
+            "meaning": dictionary_result["meaning"],
+            "known": False,
+            "source": "Free Dictionary API",
+        }
+        if dictionary_result["example"]:
+            entry["example"] = dictionary_result["example"]
         vocabulary.append(entry)
         try:
             save_vocabulary(vocabulary)
@@ -423,14 +537,13 @@ def main(page: ft.Page):
             vocabulary_status.color = CORAL
             page.update()
             return
-
         vocabulary_index = len(vocabulary) - 1
         vocabulary_answer_visible = False
-        vocabulary_word_input.value = ""
-        vocabulary_meaning_input.value = ""
-        vocabulary_example_input.value = ""
-        vocabulary_example_meaning_input.value = ""
-        vocabulary_status.value = "単語を登録しました。"
+        dictionary_result = None
+        dictionary_search_input.value = ""
+        dictionary_preview.value = ""
+        dictionary_register_button.visible = False
+        vocabulary_status.value = "単語を辞書に登録しました。"
         vocabulary_status.color = GREEN
         render_vocabulary()
 
@@ -733,6 +846,13 @@ def main(page: ft.Page):
         spacing=12,
         visible=False,
     )
+    dictionary_register_button = ft.Button(
+        "辞書に登録",
+        on_click=add_vocabulary,
+        bgcolor=GREEN,
+        color="white",
+        visible=False,
+    )
     vocabulary_panel = ft.Container(
         content=ft.Column(
             [
@@ -776,18 +896,32 @@ def main(page: ft.Page):
                 ),
                 vocabulary_progress,
                 ft.Divider(height=1, color="#DEDFD5"),
-                ft.Text("英単語を追加", size=16, color=INK, weight=ft.FontWeight.W_600),
-                vocabulary_word_input,
-                vocabulary_meaning_input,
-                vocabulary_example_input,
-                vocabulary_example_meaning_input,
-                ft.Button(
-                    "単語を登録",
-                    on_click=add_vocabulary,
-                    bgcolor=GREEN,
-                    color="white",
+                ft.Text("辞書から単語を登録", size=16, color=INK, weight=ft.FontWeight.W_600),
+                ft.Text(
+                    "Free Dictionary APIで英語の定義を検索します。日本語訳は提供されません。",
+                    size=12,
+                    color=MUTED,
                 ),
+                ft.Row(
+                    [
+                        dictionary_search_input,
+                        ft.Button(
+                            "検索",
+                            on_click=search_vocabulary,
+                            bgcolor=GREEN,
+                            color="white",
+                        ),
+                    ],
+                    spacing=8,
+                ),
+                dictionary_preview,
+                dictionary_register_button,
                 vocabulary_status,
+                ft.Text(
+                    "出典: Free Dictionary API (dictionaryapi.dev)",
+                    size=11,
+                    color=MUTED,
+                ),
                 ft.Text("登録した単語", size=16, color=INK, weight=ft.FontWeight.W_600),
                 vocabulary_entry_list,
             ],
