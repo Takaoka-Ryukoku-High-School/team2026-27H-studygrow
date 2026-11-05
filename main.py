@@ -1,5 +1,6 @@
 import calendar
 import json
+import random
 from datetime import date
 from pathlib import Path
 from urllib.error import HTTPError, URLError
@@ -20,6 +21,12 @@ PAPER = "#F6F5EF"
 INK = "#202C2A"
 MUTED = "#77807B"
 CORAL = "#CF6048"
+# 文面が決まったら、この仮コメント一覧を差し替える。
+MOTIVATION_COMMENTS = (
+    "まずは一歩、始めてみよう。",
+    "小さな積み重ねが力になる。",
+    "今日の自分にできることから。",
+)
 
 
 def load_tasks():
@@ -756,6 +763,47 @@ def main(page: ft.Page):
         color=MUTED,
     )
     home_today = ft.Text(today.value, size=12, color=MUTED)
+    motivation_text = ft.Text(
+        random.choice(MOTIVATION_COMMENTS),
+        size=17,
+        color=INK,
+        weight=ft.FontWeight.W_600,
+        expand=True,
+    )
+
+    def show_random_motivation(event):
+        choices = [
+            comment
+            for comment in MOTIVATION_COMMENTS
+            if comment != motivation_text.value
+        ]
+        motivation_text.value = random.choice(choices or MOTIVATION_COMMENTS)
+        page.update()
+
+    motivation_panel = ft.Container(
+        content=ft.Row(
+            [
+                ft.Column(
+                    [
+                        ft.Text("今日の応援コメント", size=12, color=GREEN),
+                        motivation_text,
+                    ],
+                    spacing=6,
+                    expand=True,
+                ),
+                ft.IconButton(
+                    icon=ft.Icons.REFRESH,
+                    icon_color=GREEN,
+                    tooltip="別のコメントを見る",
+                    on_click=show_random_motivation,
+                ),
+            ],
+            vertical_alignment=ft.CrossAxisAlignment.CENTER,
+        ),
+        padding=18,
+        bgcolor=GREEN_LIGHT,
+        border_radius=8,
+    )
     composer = ft.Row(
         [
             task_input,
@@ -1411,6 +1459,7 @@ def main(page: ft.Page):
                 ],
                 spacing=6,
             ),
+            motivation_panel,
             home_cards,
         ],
         width=700,
