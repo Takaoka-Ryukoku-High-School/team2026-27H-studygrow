@@ -932,7 +932,7 @@ def main(page: ft.Page):
         [
             make_home_card("01", ft.Icons.EDIT_NOTE, "学習計画", "今日やることを整理する", "plan"),
             make_home_card("02", ft.Icons.CHECKLIST, "課題", "自分の課題を追加・管理する", "assignments"),
-            make_home_card("03", ft.Icons.CALENDAR_MONTH, "カレンダー", "", "calendar"),
+            make_home_card("03", ft.Icons.CALENDAR_MONTH, "カレンダー", "月ごとの予定を確認", "calendar"),
         ],
         spacing=12,
         run_spacing=12,
