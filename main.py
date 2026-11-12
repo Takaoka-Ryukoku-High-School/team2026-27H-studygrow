@@ -1,8 +1,10 @@
+import asyncio
 import calendar
 import json
 import random
 from datetime import date
 from pathlib import Path
+from time import monotonic
 from uuid import uuid4
 
 import flet as ft
@@ -115,6 +117,10 @@ def main(page: ft.Page):
     current_section = "plan"
     visible_month = date.today().replace(day=1)
     selected_date = date.today()
+    stopwatch_running = False
+    stopwatch_elapsed = 0.0
+    stopwatch_started_at = None
+    stopwatch_generation = 0
 
     task_input = ft.TextField(
         hint_text="次にやることは？",
@@ -602,8 +608,122 @@ def main(page: ft.Page):
     workspace_card = content.controls[3]
     home_container = ft.Container(width=700, padding=ft.Padding.only(top=18, bottom=32))
     calendar_container = ft.Container(width=700, padding=ft.Padding.only(top=18, bottom=32))
+    stopwatch_display = ft.Text(
+        "00:00:00.00",
+        size=48,
+        color=GREEN,
+        weight=ft.FontWeight.BOLD,
+        text_align=ft.TextAlign.CENTER,
+    )
+    stopwatch_message = ft.Text(size=13, color=MUTED, text_align=ft.TextAlign.CENTER)
+    stopwatch_start_pause_button = ft.Button(
+        "スタート",
+        on_click=lambda event: toggle_stopwatch(),
+        bgcolor=GREEN,
+        color="white",
+    )
+    stopwatch_stop_button = ft.Button(
+        "リセット",
+        on_click=lambda event: stop_stopwatch(),
+    )
+    stopwatch_home_button = ft.TextButton(
+        "ホームに戻る",
+        icon=ft.Icons.ARROW_BACK,
+        on_click=lambda event: show_home(),
+    )
+    stopwatch_container = ft.Container(
+        content=ft.Column(
+            [
+                stopwatch_home_button,
+                ft.Container(
+                    content=ft.Column(
+                        [
+                            ft.Text("ストップウォッチ", size=28, color=INK, weight=ft.FontWeight.W_600),
+                            stopwatch_display,
+                            stopwatch_message,
+                            ft.Row(
+                                [stopwatch_start_pause_button, stopwatch_stop_button],
+                                alignment=ft.MainAxisAlignment.CENTER,
+                                spacing=12,
+                            ),
+                        ],
+                        horizontal_alignment=ft.CrossAxisAlignment.CENTER,
+                        spacing=24,
+                    ),
+                    padding=32,
+                    bgcolor="#FFFEFA",
+                    border=ft.Border.all(1, "#E3E3D9"),
+                    border_radius=8,
+                ),
+            ],
+            width=700,
+            spacing=24,
+        ),
+        width=700,
+        padding=ft.Padding.only(top=18, bottom=32),
+    )
+
+    def format_stopwatch(seconds):
+        centiseconds = int(seconds * 100)
+        hours, remainder = divmod(centiseconds, 360000)
+        minutes, remainder = divmod(remainder, 6000)
+        whole_seconds, fraction = divmod(remainder, 100)
+        return f"{hours:02}:{minutes:02}:{whole_seconds:02}.{fraction:02}"
+
+    def render_stopwatch():
+        elapsed = stopwatch_elapsed
+        if stopwatch_running and stopwatch_started_at is not None:
+            elapsed += monotonic() - stopwatch_started_at
+        stopwatch_display.value = format_stopwatch(elapsed)
+        stopwatch_home_button.visible = not stopwatch_running
+        stopwatch_start_pause_button.text = (
+            "一時停止" if stopwatch_running else "再開" if stopwatch_elapsed else "スタート"
+        )
+        stopwatch_stop_button.text = "終了してリセット" if stopwatch_running else "リセット"
+        stopwatch_message.value = (
+            "計測中はほかの画面操作ができません。終了するか、一時停止してください。"
+            if stopwatch_running
+            else "計測中は画面がロックされます。"
+        )
+        page.title = "ストップウォッチ | StudyGrow"
+        page.controls.clear()
+        page.add(stopwatch_container)
+        page.update()
+
+    async def update_stopwatch(generation):
+        while stopwatch_running and generation == stopwatch_generation:
+            render_stopwatch()
+            await asyncio.sleep(0.1)
+
+    def toggle_stopwatch():
+        nonlocal stopwatch_running, stopwatch_elapsed, stopwatch_started_at, stopwatch_generation
+        if stopwatch_running:
+            if stopwatch_started_at is not None:
+                stopwatch_elapsed += monotonic() - stopwatch_started_at
+            stopwatch_started_at = None
+            stopwatch_running = False
+            stopwatch_generation += 1
+            render_stopwatch()
+            return
+
+        stopwatch_started_at = monotonic()
+        stopwatch_running = True
+        stopwatch_generation += 1
+        generation = stopwatch_generation
+        render_stopwatch()
+        page.run_task(update_stopwatch, generation)
+
+    def stop_stopwatch():
+        nonlocal stopwatch_running, stopwatch_elapsed, stopwatch_started_at, stopwatch_generation
+        stopwatch_running = False
+        stopwatch_elapsed = 0.0
+        stopwatch_started_at = None
+        stopwatch_generation += 1
+        render_stopwatch()
 
     def show_home():
+        if stopwatch_running:
+            return
         page.title = "StudyGrow | ホーム"
         page.controls.clear()
         page.add(home_container)
@@ -611,6 +731,8 @@ def main(page: ft.Page):
 
     def open_section(section):
         nonlocal current_section, current_filter
+        if stopwatch_running:
+            return
         current_section = section
         current_filter = "active" if section == "assignments" else "all"
         task_panel.visible = section == "plan"
@@ -631,13 +753,15 @@ def main(page: ft.Page):
             page.controls.clear()
             page.add(app_container)
             render_assignments()
-        else:
+        elif section == "calendar":
             page.title = "カレンダー | StudyGrow"
             section_title.value = "カレンダー"
             section_description.value = ""
             page.controls.clear()
             page.add(calendar_container)
             render_calendar()
+        else:
+            render_stopwatch()
 
     def shift_month(offset):
         nonlocal visible_month
@@ -933,6 +1057,7 @@ def main(page: ft.Page):
             make_home_card("01", ft.Icons.EDIT_NOTE, "学習計画", "今日やることを整理する", "plan"),
             make_home_card("02", ft.Icons.CHECKLIST, "課題", "自分の課題を追加・管理する", "assignments"),
             make_home_card("03", ft.Icons.CALENDAR_MONTH, "カレンダー", "月ごとの予定を確認", "calendar"),
+            make_home_card("04", ft.Icons.TIMER_OUTLINED, "ストップウォッチ", "学習時間を計測する", "stopwatch"),
         ],
         spacing=12,
         run_spacing=12,
@@ -984,9 +1109,14 @@ def main(page: ft.Page):
         workspace_card.width = content_width
         home_container.width = content_width
         home_content.width = content_width
+        stopwatch_container.width = content_width
+        stopwatch_container.content.width = content_width
         calendar_container.width = min(1000, max(272, viewport_width - page.padding * 2))
         if current_section == "calendar":
             render_calendar()
+            return
+        if stopwatch_running:
+            render_stopwatch()
             return
         page.update()
 
