@@ -1,13 +1,19 @@
 import asyncio
 import calendar
+import io
 import json
+import math
 import random
+import sys
+import wave
+from array import array
 from datetime import date
 from pathlib import Path
 from time import monotonic
 from uuid import uuid4
 
 import flet as ft
+import flet_audio as fta
 
 
 DATA_FILE = Path.home() / ".daily_note_tasks.json"
@@ -25,6 +31,54 @@ MOTIVATION_COMMENTS = (
     "小さな積み重ねが力になる。",
     "今日の自分にできることから。",
 )
+
+
+def make_wav(samples, sample_rate):
+    sample_data = array("h", samples)
+    if sys.byteorder != "little":
+        sample_data.byteswap()
+
+    output = io.BytesIO()
+    with wave.open(output, "wb") as wav_file:
+        wav_file.setnchannels(1)
+        wav_file.setsampwidth(2)
+        wav_file.setframerate(sample_rate)
+        wav_file.writeframes(sample_data.tobytes())
+    return output.getvalue()
+
+
+def make_ambient_audio():
+    sample_rate = 16000
+    random_source = random.Random(2026)
+    filtered_noise = 0.0
+    samples = array("h")
+    for index in range(sample_rate * 6):
+        filtered_noise = filtered_noise * 0.96 + random_source.uniform(-1, 1) * 0.04
+        time_seconds = index / sample_rate
+        tone = (
+            0.08 * math.sin(2 * math.pi * 110 * time_seconds)
+            + 0.035 * math.sin(2 * math.pi * 165 * time_seconds)
+        )
+        samples.append(round((tone + filtered_noise * 0.12) * 32767))
+    return make_wav(samples, sample_rate)
+
+
+def make_alarm_audio():
+    sample_rate = 16000
+    samples = array("h")
+    pulse_length = int(sample_rate * 0.65)
+    on_length = int(sample_rate * 0.3)
+    fade_length = int(sample_rate * 0.015)
+    for index in range(sample_rate * 3):
+        pulse_position = index % pulse_length
+        if pulse_position >= on_length:
+            samples.append(0)
+            continue
+        fade = min(1.0, pulse_position / fade_length, (on_length - pulse_position) / fade_length)
+        frequency = 880 if (index // pulse_length) % 2 == 0 else 660
+        value = 0.32 * fade * math.sin(2 * math.pi * frequency * index / sample_rate)
+        samples.append(round(value * 32767))
+    return make_wav(samples, sample_rate)
 
 
 def load_tasks():
@@ -121,6 +175,25 @@ def main(page: ft.Page):
     stopwatch_elapsed = 0.0
     stopwatch_started_at = None
     stopwatch_generation = 0
+    timer_running = False
+    timer_remaining = None
+    timer_started_at = None
+    timer_generation = 0
+    timer_alarm_active = False
+
+    ambient_audio = fta.Audio(
+        src=make_ambient_audio(),
+        autoplay=False,
+        release_mode=fta.ReleaseMode.LOOP,
+        volume=0.16,
+    )
+    alarm_audio = fta.Audio(
+        src=make_alarm_audio(),
+        autoplay=False,
+        release_mode=fta.ReleaseMode.STOP,
+        volume=0.65,
+    )
+    page.services.extend([ambient_audio, alarm_audio])
 
     task_input = ft.TextField(
         hint_text="次にやることは？",
@@ -631,9 +704,17 @@ def main(page: ft.Page):
         icon=ft.Icons.ARROW_BACK,
         on_click=lambda event: show_home(),
     )
+    stopwatch_mode_row = ft.Row(
+        [
+            ft.TextButton("ストップウォッチ", on_click=lambda event: show_stopwatch_mode()),
+            ft.TextButton("タイマー", on_click=lambda event: show_timer_mode()),
+        ],
+        spacing=8,
+    )
     stopwatch_container = ft.Container(
         content=ft.Column(
             [
+                stopwatch_mode_row,
                 stopwatch_home_button,
                 ft.Container(
                     content=ft.Column(
@@ -645,6 +726,109 @@ def main(page: ft.Page):
                                 [stopwatch_start_pause_button, stopwatch_stop_button],
                                 alignment=ft.MainAxisAlignment.CENTER,
                                 spacing=12,
+                            ),
+                        ],
+                        horizontal_alignment=ft.CrossAxisAlignment.CENTER,
+                        spacing=24,
+                    ),
+                    padding=32,
+                    bgcolor="#FFFEFA",
+                    border=ft.Border.all(1, "#E3E3D9"),
+                    border_radius=8,
+                ),
+            ],
+            width=700,
+            spacing=24,
+        ),
+        width=700,
+        padding=ft.Padding.only(top=18, bottom=32),
+    )
+    timer_hours_input = ft.TextField(
+        value="00",
+        label="時間",
+        width=92,
+        text_align=ft.TextAlign.CENTER,
+    )
+    timer_minutes_input = ft.TextField(
+        value="25",
+        label="分",
+        width=92,
+        text_align=ft.TextAlign.CENTER,
+    )
+    timer_seconds_input = ft.TextField(
+        value="00",
+        label="秒",
+        width=92,
+        text_align=ft.TextAlign.CENTER,
+    )
+    timer_input_row = ft.Row(
+        [
+            timer_hours_input,
+            ft.Text(":", size=20, color=MUTED),
+            timer_minutes_input,
+            ft.Text(":", size=20, color=MUTED),
+            timer_seconds_input,
+        ],
+        alignment=ft.MainAxisAlignment.CENTER,
+        vertical_alignment=ft.CrossAxisAlignment.CENTER,
+    )
+    timer_display = ft.Text(
+        "00:25:00.00",
+        size=48,
+        color=GREEN,
+        weight=ft.FontWeight.BOLD,
+        text_align=ft.TextAlign.CENTER,
+    )
+    timer_message = ft.Text(
+        "時間を設定してタイマーを開始してください。",
+        size=13,
+        color=MUTED,
+        text_align=ft.TextAlign.CENTER,
+    )
+    timer_mode_row = ft.Row(
+        [
+            ft.TextButton("ストップウォッチ", on_click=lambda event: show_stopwatch_mode()),
+            ft.TextButton("タイマー", on_click=lambda event: show_timer_mode()),
+        ],
+        spacing=8,
+    )
+    timer_home_button = ft.TextButton(
+        "ホームに戻る",
+        icon=ft.Icons.ARROW_BACK,
+        on_click=lambda event: show_home(),
+    )
+    timer_toggle_button = ft.Button(
+        "タイマー開始",
+        on_click=lambda event: toggle_timer(event),
+        bgcolor=GREEN,
+        color="white",
+    )
+    timer_reset_button = ft.Button("リセット", on_click=lambda event: reset_timer(event))
+    timer_alarm_stop_button = ft.Button(
+        "アラーム停止",
+        on_click=lambda event: stop_timer_alarm(event),
+    )
+    timer_container = ft.Container(
+        content=ft.Column(
+            [
+                timer_mode_row,
+                timer_home_button,
+                ft.Container(
+                    content=ft.Column(
+                        [
+                            ft.Text("タイマー", size=28, color=INK, weight=ft.FontWeight.W_600),
+                            timer_input_row,
+                            timer_display,
+                            timer_message,
+                            ft.Row(
+                                [
+                                    timer_toggle_button,
+                                    timer_reset_button,
+                                    timer_alarm_stop_button,
+                                ],
+                                alignment=ft.MainAxisAlignment.CENTER,
+                                spacing=12,
+                                wrap=True,
                             ),
                         ],
                         horizontal_alignment=ft.CrossAxisAlignment.CENTER,
@@ -676,18 +860,58 @@ def main(page: ft.Page):
             elapsed += monotonic() - stopwatch_started_at
         stopwatch_display.value = format_stopwatch(elapsed)
         stopwatch_home_button.visible = not stopwatch_running
+        stopwatch_mode_row.visible = not stopwatch_running
         stopwatch_start_pause_button.text = (
             "一時停止" if stopwatch_running else "再開" if stopwatch_elapsed else "スタート"
         )
-        stopwatch_stop_button.text = "終了してリセット" if stopwatch_running else "リセット"
+        stopwatch_stop_button.visible = not stopwatch_running
+        stopwatch_stop_button.text = "リセット"
         stopwatch_message.value = (
-            "計測中はほかの画面操作ができません。終了するか、一時停止してください。"
+            "計測中は一時停止以外の操作ができません。"
             if stopwatch_running
             else "計測中は画面がロックされます。"
         )
         page.title = "ストップウォッチ | StudyGrow"
         page.controls.clear()
         page.add(stopwatch_container)
+        page.update()
+
+    def render_timer():
+        if timer_remaining is None:
+            try:
+                displayed_seconds = int(timer_hours_input.value or 0) * 3600
+                displayed_seconds += int(timer_minutes_input.value or 0) * 60
+                displayed_seconds += int(timer_seconds_input.value or 0)
+            except ValueError:
+                displayed_seconds = 0
+        else:
+            displayed_seconds = timer_remaining
+
+        if timer_running and timer_started_at is not None and timer_remaining is not None:
+            displayed_seconds = max(
+                0,
+                timer_remaining - (monotonic() - timer_started_at),
+            )
+        timer_display.value = format_stopwatch(displayed_seconds)
+        timer_home_button.visible = not timer_running
+        timer_mode_row.visible = not timer_running
+        timer_input_row.visible = timer_remaining is None and not timer_running
+        timer_display.visible = timer_remaining is not None or timer_running
+        timer_toggle_button.visible = not timer_alarm_active
+        timer_toggle_button.text = (
+            "一時停止"
+            if timer_running
+            else "再開"
+            if timer_remaining is not None and timer_remaining > 0
+            else "タイマー開始"
+        )
+        timer_reset_button.visible = not timer_running and not timer_alarm_active
+        timer_alarm_stop_button.visible = timer_alarm_active
+        if timer_running:
+            timer_message.value = "タイマー動作中は一時停止以外の操作ができません。"
+        page.title = "タイマー | StudyGrow"
+        page.controls.clear()
+        page.add(timer_container)
         page.update()
 
     async def update_stopwatch(generation):
@@ -697,6 +921,8 @@ def main(page: ft.Page):
 
     def toggle_stopwatch():
         nonlocal stopwatch_running, stopwatch_elapsed, stopwatch_started_at, stopwatch_generation
+        if timer_running:
+            return
         if stopwatch_running:
             if stopwatch_started_at is not None:
                 stopwatch_elapsed += monotonic() - stopwatch_started_at
@@ -721,8 +947,116 @@ def main(page: ft.Page):
         stopwatch_generation += 1
         render_stopwatch()
 
-    def show_home():
+    def show_stopwatch_mode():
+        if stopwatch_running or timer_running:
+            return
+        render_stopwatch()
+
+    def show_timer_mode():
+        if stopwatch_running or timer_running:
+            return
+        render_timer()
+
+    def read_timer_duration():
+        try:
+            hours = int(timer_hours_input.value or 0)
+            minutes = int(timer_minutes_input.value or 0)
+            seconds = int(timer_seconds_input.value or 0)
+        except ValueError as error:
+            raise ValueError("時間・分・秒には整数を入力してください。") from error
+
+        if not 0 <= hours <= 99 or not 0 <= minutes < 60 or not 0 <= seconds < 60:
+            raise ValueError("時間は0〜99、分と秒は0〜59で入力してください。")
+        duration = hours * 3600 + minutes * 60 + seconds
+        if duration == 0:
+            raise ValueError("1秒以上の時間を設定してください。")
+        return duration
+
+    async def toggle_timer(event):
+        nonlocal timer_running, timer_remaining, timer_started_at, timer_generation
         if stopwatch_running:
+            return
+
+        if timer_running:
+            if timer_started_at is not None and timer_remaining is not None:
+                timer_remaining = max(
+                    0,
+                    timer_remaining - (monotonic() - timer_started_at),
+                )
+            timer_started_at = None
+            timer_running = False
+            timer_generation += 1
+            timer_message.value = "一時停止中です。再開するか、リセットできます。"
+            render_timer()
+            await ambient_audio.pause()
+            return
+
+        if timer_remaining is None or timer_remaining <= 0:
+            try:
+                timer_remaining = float(read_timer_duration())
+            except ValueError as error:
+                timer_message.value = str(error)
+                render_timer()
+                return
+
+        timer_started_at = monotonic()
+        timer_running = True
+        timer_generation += 1
+        generation = timer_generation
+        timer_message.value = "タイマー動作中は一時停止以外の操作ができません。"
+        render_timer()
+        page.run_task(update_timer, generation)
+        await ambient_audio.play()
+
+    async def update_timer(generation):
+        nonlocal timer_running, timer_remaining, timer_started_at
+        nonlocal timer_generation, timer_alarm_active
+        while timer_running and generation == timer_generation:
+            if timer_remaining is None or timer_started_at is None:
+                return
+            remaining = timer_remaining - (monotonic() - timer_started_at)
+            if remaining <= 0:
+                timer_remaining = 0.0
+                timer_started_at = None
+                timer_running = False
+                timer_generation += 1
+                timer_alarm_active = True
+                timer_message.value = "時間になりました。アラームを再生しています。"
+                render_timer()
+                await ambient_audio.pause()
+                await alarm_audio.play()
+                await asyncio.sleep(3)
+                if timer_alarm_active:
+                    timer_alarm_active = False
+                    timer_message.value = "タイマーが終了しました。"
+                    render_timer()
+                return
+
+            timer_display.value = format_stopwatch(remaining)
+            page.update()
+            await asyncio.sleep(0.1)
+
+    async def reset_timer(event):
+        nonlocal timer_remaining, timer_alarm_active
+        if timer_running:
+            return
+        alarm_was_active = timer_alarm_active
+        timer_alarm_active = False
+        timer_remaining = None
+        timer_message.value = "時間を設定してタイマーを開始してください。"
+        render_timer()
+        if alarm_was_active:
+            await alarm_audio.pause()
+
+    async def stop_timer_alarm(event):
+        nonlocal timer_alarm_active
+        timer_alarm_active = False
+        timer_message.value = "タイマーが終了しました。"
+        render_timer()
+        await alarm_audio.pause()
+
+    def show_home():
+        if stopwatch_running or timer_running:
             return
         page.title = "StudyGrow | ホーム"
         page.controls.clear()
@@ -731,7 +1065,7 @@ def main(page: ft.Page):
 
     def open_section(section):
         nonlocal current_section, current_filter
-        if stopwatch_running:
+        if stopwatch_running or timer_running:
             return
         current_section = section
         current_filter = "active" if section == "assignments" else "all"
@@ -1111,9 +1445,14 @@ def main(page: ft.Page):
         home_content.width = content_width
         stopwatch_container.width = content_width
         stopwatch_container.content.width = content_width
+        timer_container.width = content_width
+        timer_container.content.width = content_width
         calendar_container.width = min(1000, max(272, viewport_width - page.padding * 2))
         if current_section == "calendar":
             render_calendar()
+            return
+        if timer_running:
+            render_timer()
             return
         if stopwatch_running:
             render_stopwatch()
