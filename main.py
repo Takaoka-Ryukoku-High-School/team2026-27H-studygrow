@@ -743,21 +743,30 @@ def main(page: ft.Page):
         width=700,
         padding=ft.Padding.only(top=18, bottom=32),
     )
-    timer_hours_input = ft.TextField(
+    def timer_options(maximum):
+        return [
+            ft.DropdownOption(key=f"{value:02d}", text=f"{value:02d}")
+            for value in range(maximum + 1)
+        ]
+
+    timer_hours_input = ft.Dropdown(
         value="00",
         label="時間",
+        options=timer_options(24),
         width=92,
         text_align=ft.TextAlign.CENTER,
     )
-    timer_minutes_input = ft.TextField(
+    timer_minutes_input = ft.Dropdown(
         value="25",
         label="分",
+        options=timer_options(60),
         width=92,
         text_align=ft.TextAlign.CENTER,
     )
-    timer_seconds_input = ft.TextField(
+    timer_seconds_input = ft.Dropdown(
         value="00",
         label="秒",
+        options=timer_options(60),
         width=92,
         text_align=ft.TextAlign.CENTER,
     )
@@ -965,8 +974,8 @@ def main(page: ft.Page):
         except ValueError as error:
             raise ValueError("時間・分・秒には整数を入力してください。") from error
 
-        if not 0 <= hours <= 99 or not 0 <= minutes < 60 or not 0 <= seconds < 60:
-            raise ValueError("時間は0〜99、分と秒は0〜59で入力してください。")
+        if not 0 <= hours <= 24 or not 0 <= minutes <= 60 or not 0 <= seconds <= 60:
+            raise ValueError("時間は0〜24、分と秒は0〜60から選んでください。")
         duration = hours * 3600 + minutes * 60 + seconds
         if duration == 0:
             raise ValueError("1秒以上の時間を設定してください。")
@@ -1043,6 +1052,9 @@ def main(page: ft.Page):
         alarm_was_active = timer_alarm_active
         timer_alarm_active = False
         timer_remaining = None
+        timer_hours_input.value = "00"
+        timer_minutes_input.value = "00"
+        timer_seconds_input.value = "00"
         timer_message.value = "時間を設定してタイマーを開始してください。"
         render_timer()
         if alarm_was_active:
