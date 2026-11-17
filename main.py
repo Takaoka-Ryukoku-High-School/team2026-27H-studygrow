@@ -808,14 +808,12 @@ def main(page: ft.Page):
     )
     timer_toggle_button = ft.Button(
         "タイマー開始",
-        on_click=lambda event: toggle_timer(event),
         bgcolor=GREEN,
         color="white",
     )
-    timer_reset_button = ft.Button("リセット", on_click=lambda event: reset_timer(event))
+    timer_reset_button = ft.Button("リセット")
     timer_alarm_stop_button = ft.Button(
         "アラーム停止",
-        on_click=lambda event: stop_timer_alarm(event),
     )
     timer_container = ft.Container(
         content=ft.Column(
@@ -908,7 +906,7 @@ def main(page: ft.Page):
         timer_display.visible = timer_remaining is not None or timer_running
         timer_toggle_button.visible = not timer_alarm_active
         timer_toggle_button.text = (
-            "一時停止"
+            "タイマー停止"
             if timer_running
             else "再開"
             if timer_remaining is not None and timer_remaining > 0
@@ -917,7 +915,7 @@ def main(page: ft.Page):
         timer_reset_button.visible = not timer_running and not timer_alarm_active
         timer_alarm_stop_button.visible = timer_alarm_active
         if timer_running:
-            timer_message.value = "タイマー動作中は一時停止以外の操作ができません。"
+            timer_message.value = "タイマー動作中は「タイマー停止」以外の操作ができません。"
         page.title = "タイマー | StudyGrow"
         page.controls.clear()
         page.add(timer_container)
@@ -1066,6 +1064,10 @@ def main(page: ft.Page):
         timer_message.value = "タイマーが終了しました。"
         render_timer()
         await alarm_audio.pause()
+
+    timer_toggle_button.on_click = toggle_timer
+    timer_reset_button.on_click = reset_timer
+    timer_alarm_stop_button.on_click = stop_timer_alarm
 
     def show_home():
         if stopwatch_running or timer_running:
