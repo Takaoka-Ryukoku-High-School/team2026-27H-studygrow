@@ -175,6 +175,8 @@ def main(page: ft.Page):
     stopwatch_elapsed = 0.0
     stopwatch_started_at = None
     stopwatch_generation = 0
+    stopwatch_laps = []
+    stopwatch_last_lap = 0.0
     timer_running = False
     timer_remaining = None
     timer_started_at = None
@@ -700,6 +702,14 @@ def main(page: ft.Page):
         "リセット",
         on_click=lambda event: stop_stopwatch(),
     )
+    stopwatch_lap_button = ft.Button(
+        "ラップ",
+        on_click=lambda event: lap_stopwatch(),
+    )
+    stopwatch_lap_list = ft.Column(
+        spacing=6,
+        horizontal_alignment=ft.CrossAxisAlignment.STRETCH,
+    )
     stopwatch_home_button = ft.TextButton(
         "ホームに戻る",
         icon=ft.Icons.ARROW_BACK,
@@ -724,10 +734,11 @@ def main(page: ft.Page):
                             stopwatch_display,
                             stopwatch_message,
                             ft.Row(
-                                [stopwatch_start_pause_button, stopwatch_stop_button],
+                                [stopwatch_start_pause_button, stopwatch_lap_button, stopwatch_stop_button],
                                 alignment=ft.MainAxisAlignment.CENTER,
                                 spacing=12,
                             ),
+                            stopwatch_lap_list,
                         ],
                         horizontal_alignment=ft.CrossAxisAlignment.CENTER,
                         spacing=24,
@@ -872,13 +883,32 @@ def main(page: ft.Page):
         stopwatch_start_pause_button.text = (
             "一時停止" if stopwatch_running else "再開" if stopwatch_elapsed else "スタート"
         )
+        stopwatch_lap_button.visible = stopwatch_running or stopwatch_elapsed > 0
         stopwatch_stop_button.visible = not stopwatch_running
         stopwatch_stop_button.text = "リセット"
         stopwatch_message.value = (
-            "計測中は一時停止以外の操作ができません。"
+            "計測中は一時停止とラップ以外の操作ができません。"
             if stopwatch_running
             else "計測中は画面がロックされます。"
         )
+        stopwatch_lap_list.controls.clear()
+        stopwatch_lap_list.visible = bool(stopwatch_laps)
+        for lap_number, lap_elapsed, lap_duration in reversed(stopwatch_laps):
+            stopwatch_lap_list.controls.append(
+                ft.Container(
+                    content=ft.Row(
+                        [
+                            ft.Text(f"ラップ {lap_number}", size=14, color=INK),
+                            ft.Text(format_stopwatch(lap_duration), size=14, color=MUTED),
+                            ft.Text(format_stopwatch(lap_elapsed), size=14, color=GREEN, weight=ft.FontWeight.W_600),
+                        ],
+                        alignment=ft.MainAxisAlignment.SPACE_BETWEEN,
+                    ),
+                    padding=ft.Padding.symmetric(horizontal=12, vertical=8),
+                    bgcolor=PAPER,
+                    border_radius=6,
+                )
+            )
         page.title = "ストップウォッチ | StudyGrow"
         page.controls.clear()
         page.add(stopwatch_container)
@@ -953,10 +983,25 @@ def main(page: ft.Page):
 
     def stop_stopwatch():
         nonlocal stopwatch_running, stopwatch_elapsed, stopwatch_started_at, stopwatch_generation
+        nonlocal stopwatch_laps, stopwatch_last_lap
         stopwatch_running = False
         stopwatch_elapsed = 0.0
         stopwatch_started_at = None
         stopwatch_generation += 1
+        stopwatch_laps = []
+        stopwatch_last_lap = 0.0
+        render_stopwatch()
+
+    def lap_stopwatch():
+        nonlocal stopwatch_laps, stopwatch_last_lap
+        elapsed = stopwatch_elapsed
+        if stopwatch_running and stopwatch_started_at is not None:
+            elapsed += monotonic() - stopwatch_started_at
+        if elapsed <= 0:
+            return
+        lap_duration = elapsed - stopwatch_last_lap
+        stopwatch_laps.append((len(stopwatch_laps) + 1, elapsed, lap_duration))
+        stopwatch_last_lap = elapsed
         render_stopwatch()
 
     def show_stopwatch_mode():
