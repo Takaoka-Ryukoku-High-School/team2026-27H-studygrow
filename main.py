@@ -180,6 +180,7 @@ def main(page: ft.Page):
     timer_started_at = None
     timer_generation = 0
     timer_alarm_active = False
+    timer_audio_available = True
 
     ambient_audio = fta.Audio(
         src=make_ambient_audio(),
@@ -915,7 +916,11 @@ def main(page: ft.Page):
         timer_reset_button.visible = not timer_running and not timer_alarm_active
         timer_alarm_stop_button.visible = timer_alarm_active
         if timer_running:
-            timer_message.value = "タイマー動作中は「タイマー停止」以外の操作ができません。"
+            timer_message.value = (
+                "タイマー動作中は「タイマー停止」以外の操作ができません。"
+                if timer_audio_available
+                else "音声機能が利用できないため、タイマーは音声なしで動作しています。"
+            )
         page.title = "タイマー | StudyGrow"
         page.controls.clear()
         page.add(timer_container)
@@ -979,6 +984,29 @@ def main(page: ft.Page):
             raise ValueError("1秒以上の時間を設定してください。")
         return duration
 
+    async def run_timer_audio_command(audio, method):
+        nonlocal timer_audio_available
+        if not timer_audio_available:
+            return
+
+        try:
+            if method == "play":
+                await audio.play()
+            else:
+                await audio.pause()
+        except RuntimeError as error:
+            if "Timeout waiting for invoke method listener" not in str(error):
+                raise
+            timer_audio_available = False
+            timer_message.value = (
+                "音声機能に応答がありません。タイマーは音声なしで続行します。"
+            )
+            page.update()
+
+    async def play_timer_alarm():
+        await run_timer_audio_command(ambient_audio, "pause")
+        await run_timer_audio_command(alarm_audio, "play")
+
     async def toggle_timer(event):
         nonlocal timer_running, timer_remaining, timer_started_at, timer_generation
         if stopwatch_running:
@@ -995,7 +1023,7 @@ def main(page: ft.Page):
             timer_generation += 1
             timer_message.value = "一時停止中です。再開するか、リセットできます。"
             render_timer()
-            await ambient_audio.pause()
+            page.run_task(run_timer_audio_command, ambient_audio, "pause")
             return
 
         if timer_remaining is None or timer_remaining <= 0:
@@ -1010,10 +1038,10 @@ def main(page: ft.Page):
         timer_running = True
         timer_generation += 1
         generation = timer_generation
-        timer_message.value = "タイマー動作中は一時停止以外の操作ができません。"
+        timer_message.value = "タイマー動作中は「タイマー停止」以外の操作ができません。"
         render_timer()
         page.run_task(update_timer, generation)
-        await ambient_audio.play()
+        page.run_task(run_timer_audio_command, ambient_audio, "play")
 
     async def update_timer(generation):
         nonlocal timer_running, timer_remaining, timer_started_at
@@ -1028,14 +1056,21 @@ def main(page: ft.Page):
                 timer_running = False
                 timer_generation += 1
                 timer_alarm_active = True
-                timer_message.value = "時間になりました。アラームを再生しています。"
+                timer_message.value = (
+                    "時間になりました。アラームを再生しています。"
+                    if timer_audio_available
+                    else "時間になりました。音声なしでタイマーを終了します。"
+                )
                 render_timer()
-                await ambient_audio.pause()
-                await alarm_audio.play()
+                page.run_task(play_timer_alarm)
                 await asyncio.sleep(3)
                 if timer_alarm_active:
                     timer_alarm_active = False
-                    timer_message.value = "タイマーが終了しました。"
+                    timer_message.value = (
+                        "タイマーが終了しました。"
+                        if timer_audio_available
+                        else "タイマーが終了しました（音声なし）。"
+                    )
                     render_timer()
                 return
 
@@ -1056,14 +1091,14 @@ def main(page: ft.Page):
         timer_message.value = "時間を設定してタイマーを開始してください。"
         render_timer()
         if alarm_was_active:
-            await alarm_audio.pause()
+            page.run_task(run_timer_audio_command, alarm_audio, "pause")
 
     async def stop_timer_alarm(event):
         nonlocal timer_alarm_active
         timer_alarm_active = False
         timer_message.value = "タイマーが終了しました。"
         render_timer()
-        await alarm_audio.pause()
+        page.run_task(run_timer_audio_command, alarm_audio, "pause")
 
     timer_toggle_button.on_click = toggle_timer
     timer_reset_button.on_click = reset_timer
