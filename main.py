@@ -77,6 +77,18 @@ MOTIVATION_COMMENTS = (
     "自分の成長を感じてみよう。",
     "今日も一歩前へ。",
 )
+DAILY_CHALLENGE_SUBJECTS = (
+    "国語",
+    "数学",
+    "英語",
+    "理科",
+    "社会",
+)
+
+
+def daily_challenge_for(day):
+    subject = random.Random(day.toordinal()).choice(DAILY_CHALLENGE_SUBJECTS)
+    return f"{subject}のワークを1ページ進めよう。"
 
 
 def make_wav(samples, sample_rate):
@@ -215,6 +227,7 @@ def main(page: ft.Page):
     events = load_events()
     current_filter = "all"
     current_section = "plan"
+    daily_challenge_date = date.today()
     visible_month = date.today().replace(day=1)
     selected_date = date.today()
     stopwatch_running = False
@@ -283,6 +296,18 @@ def main(page: ft.Page):
     calendar_selected_date = ft.Text(size=13, color=GREEN)
     task_list = ft.Column(spacing=0)
     task_count = ft.Text(color=MUTED, size=12)
+    daily_challenge_text = ft.Text(
+        daily_challenge_for(daily_challenge_date),
+        size=15,
+        color=INK,
+        weight=ft.FontWeight.W_600,
+    )
+    daily_challenge_status = ft.Text(size=12, color=MUTED)
+    daily_challenge_button = ft.Button(
+        "計画に追加",
+        bgcolor=GREEN,
+        color="white",
+    )
     progress_label = ft.Text(color=MUTED, size=11)
     section_title = ft.Text(size=38, color=INK, weight=ft.FontWeight.W_600)
     section_description = ft.Text(size=13, color=MUTED)
@@ -312,6 +337,17 @@ def main(page: ft.Page):
             return
         tasks.insert(0, {"id": str(uuid4()), "text": text, "done": False})
         task_input.value = ""
+        persist()
+        set_filter("all")
+
+    def add_daily_challenge(event):
+        if any(task["text"] == daily_challenge_text.value for task in tasks):
+            render()
+            return
+        tasks.insert(
+            0,
+            {"id": str(uuid4()), "text": daily_challenge_text.value, "done": False},
+        )
         persist()
         set_filter("all")
 
@@ -397,6 +433,25 @@ def main(page: ft.Page):
         render_assignments()
 
     def render():
+        nonlocal daily_challenge_date
+        current_date = date.today()
+        today.value = current_date.strftime("%Y年%m月%d日")
+        home_today.value = today.value
+        if current_date != daily_challenge_date:
+            daily_challenge_date = current_date
+            daily_challenge_text.value = daily_challenge_for(current_date)
+
+        challenge_added = any(
+            task["text"] == daily_challenge_text.value for task in tasks
+        )
+        daily_challenge_status.value = (
+            "今日の計画に追加済みです。"
+            if challenge_added
+            else "今日の学習に、ひとつ挑戦してみましょう。"
+        )
+        daily_challenge_button.text = "追加済み" if challenge_added else "計画に追加"
+        daily_challenge_button.disabled = challenge_added
+
         visible_tasks = [
             task
             for task in tasks
@@ -655,6 +710,28 @@ def main(page: ft.Page):
 
     task_panel = ft.Column(
         [
+            ft.Container(
+                content=ft.Column(
+                    [
+                        ft.Text(
+                            "今日のランダム課題",
+                            size=12,
+                            color=GREEN,
+                            weight=ft.FontWeight.W_600,
+                        ),
+                        daily_challenge_text,
+                        ft.Row(
+                            [daily_challenge_button],
+                            alignment=ft.MainAxisAlignment.END,
+                        ),
+                        daily_challenge_status,
+                    ],
+                    spacing=8,
+                    horizontal_alignment=ft.CrossAxisAlignment.STRETCH,
+                ),
+                padding=18,
+                bgcolor=GREEN_LIGHT,
+            ),
             composer_panel,
             filter_panel,
             ft.Container(content=task_list, padding=ft.Padding.symmetric(horizontal=18)),
@@ -670,6 +747,7 @@ def main(page: ft.Page):
         ],
         spacing=0,
     )
+    daily_challenge_button.on_click = add_daily_challenge
 
     content = ft.Column(
         [
