@@ -43,6 +43,41 @@ UI_LABELS = {
         "today_description": "やりたいことを選んで、学習を始めましょう。",
         "plan_description": "ひとつずつ、今日の学びを進めよう。",
         "assignments_description": "自分の課題を追加し、完了状況を管理しましょう。",
+        "task_hint": "次にやることは？",
+        "assignment_hint": "自分の課題（例：数学ワーク p.10）",
+        "event_hint": "予定を入力",
+        "add": "追加  ＋",
+        "all": "すべて",
+        "active": "未完了",
+        "done": "完了",
+        "completed_count": "件 完了",
+        "no_tasks": "タスクはまだありません",
+        "random_challenge": "今日のランダム課題",
+        "challenge_added": "追加済み",
+        "add_challenge": "計画に追加",
+        "clear_done": "完了した項目を削除",
+        "delete": "削除",
+        "motivation_title": "今日の応援コメント",
+        "motivation_refresh": "別のコメントを見る",
+        "assignment_add_title": "自分の課題を追加",
+        "start": "スタート",
+        "pause": "一時停止",
+        "resume": "再開",
+        "reset": "リセット",
+        "lap": "ラップ",
+        "timer_start": "タイマー開始",
+        "timer_stop": "タイマー停止",
+        "alarm_stop": "アラーム停止",
+        "hours": "時間",
+        "minutes": "分",
+        "seconds": "秒",
+        "set_timer": "時間を設定してタイマーを開始してください。",
+        "timer_running": "タイマー動作中は「タイマー停止」以外の操作ができません。",
+        "timer_paused": "一時停止中です。再開するか、リセットできます。",
+        "timer_finished": "タイマーが終了しました。",
+        "add_event": "予定を追加",
+        "selected_events": "選択日の予定",
+        "no_events": "この日の予定はありません。",
     },
     "en": {
         "home": "Home",
@@ -61,6 +96,41 @@ UI_LABELS = {
         "today_description": "Choose what you want to do and begin learning.",
         "plan_description": "Move forward with today's learning, one step at a time.",
         "assignments_description": "Add assignments and manage their completion status.",
+        "task_hint": "What is your next task?",
+        "assignment_hint": "My assignment (e.g. Math workbook p.10)",
+        "event_hint": "Enter a schedule",
+        "add": "Add  ＋",
+        "all": "All",
+        "active": "Incomplete",
+        "done": "Done",
+        "completed_count": "completed",
+        "no_tasks": "No tasks yet",
+        "random_challenge": "Today's Random Challenge",
+        "challenge_added": "Added",
+        "add_challenge": "Add to Plan",
+        "clear_done": "Delete completed items",
+        "delete": "Delete",
+        "motivation_title": "Today's Encouragement",
+        "motivation_refresh": "Show another comment",
+        "assignment_add_title": "Add your own assignment",
+        "start": "Start",
+        "pause": "Pause",
+        "resume": "Resume",
+        "reset": "Reset",
+        "lap": "Lap",
+        "timer_start": "Start Timer",
+        "timer_stop": "Stop Timer",
+        "alarm_stop": "Stop Alarm",
+        "hours": "Hours",
+        "minutes": "Minutes",
+        "seconds": "Seconds",
+        "set_timer": "Set a time and start the timer.",
+        "timer_running": "While the timer is running, only 'Stop Timer' is available.",
+        "timer_paused": "Paused. Resume or reset the timer.",
+        "timer_finished": "The timer has finished.",
+        "add_event": "Add Schedule",
+        "selected_events": "Selected Date",
+        "no_events": "There are no schedules for this date.",
     },
     "hiragana": {
         "home": "ほーむ",
@@ -79,6 +149,41 @@ UI_LABELS = {
         "today_description": "やりたいことをえらんで、学習をはじめましょう。",
         "plan_description": "ひとつずつ、きょうの学びをすすめよう。",
         "assignments_description": "じぶんのかだいをついかして、できたかをかんりしましょう。",
+        "task_hint": "つぎにすることは？",
+        "assignment_hint": "じぶんのかだい（れい：すうがくワーク p.10）",
+        "event_hint": "よていを入力",
+        "add": "ついか  ＋",
+        "all": "すべて",
+        "active": "みかんりょう",
+        "done": "かんりょう",
+        "completed_count": "件かんりょう",
+        "no_tasks": "タスクはまだありません",
+        "random_challenge": "きょうのランダムかだい",
+        "challenge_added": "ついかずみ",
+        "add_challenge": "けいかくについか",
+        "clear_done": "かんりょうした項目を削除",
+        "delete": "削除",
+        "motivation_title": "きょうのおうえんコメント",
+        "motivation_refresh": "べつのコメントを見る",
+        "assignment_add_title": "じぶんのかだいをついか",
+        "start": "スタート",
+        "pause": "いちじていし",
+        "resume": "さいかい",
+        "reset": "リセット",
+        "lap": "ラップ",
+        "timer_start": "タイマーかいし",
+        "timer_stop": "タイマーていし",
+        "alarm_stop": "アラームていし",
+        "hours": "じかん",
+        "minutes": "ふん",
+        "seconds": "びょう",
+        "set_timer": "じかんをせっていしてタイマーをかいししてください。",
+        "timer_running": "タイマーちゅうは「タイマーていし」以外の操作ができません。",
+        "timer_paused": "いちじていしちゅうです。さいかいするかリセットできます。",
+        "timer_finished": "タイマーがしゅうりょうしました。",
+        "add_event": "よていをついか",
+        "selected_events": "えらんだ日のよてい",
+        "no_events": "この日のよていはありません。",
     },
 }
 
@@ -98,6 +203,7 @@ ENGLISH_MOTIVATION_COMMENTS = (
     "A slow, steady step still moves you forward.",
     "It is fine to work at your own pace.",
     "Do not forget your small successes.",
+    "You can do it!! by mochineko.",
 )
 
 HIRAGANA_MOTIVATION_COMMENTS = (
@@ -170,6 +276,7 @@ MOTIVATION_COMMENTS = (
     "一つ終わらせたら次へ。",
     "自分の成長を感じてみよう。",
     "今日も一歩前へ。",
+    "頑張るっぽよ。もち猫より",
 )
 DAILY_CHALLENGE_SUBJECTS = (
     "国語",
@@ -196,8 +303,17 @@ def motivation_comments_for(mode):
     return MOTIVATION_COMMENTS
 
 
-def daily_challenge_for(day):
-    subject = random.Random(day.toordinal()).choice(DAILY_CHALLENGE_SUBJECTS)
+def daily_challenge_for(day, mode="ja"):
+    subjects = (
+        ("Language Arts", "English", "Science", "Social Studies", "Math")
+        if mode == "en"
+        else ("国語", "英語", "理科", "社会", "数学")
+    )
+    subject = random.Random(day.toordinal()).choice(subjects)
+    if mode == "en":
+        return f"Work on 1 page of {subject}."
+    if mode == "hiragana":
+        return f"{subject}のワークを1ページすすめよう。"
     return f"{subject}のワークを1ページ進めよう。"
 
 
@@ -369,7 +485,7 @@ def main(page: ft.Page):
     page.services.extend([ambient_audio, alarm_audio])
 
     task_input = ft.TextField(
-        hint_text="次にやることは？",
+        hint_text=UI_LABELS[ui_mode]["task_hint"],
         expand=True,
         autofocus=True,
         border_radius=6,
@@ -380,7 +496,7 @@ def main(page: ft.Page):
         on_submit=lambda event: add_task(event),
     )
     assignment_input = ft.TextField(
-        hint_text="自分の課題（例：数学ワーク p.10）",
+        hint_text=UI_LABELS[ui_mode]["assignment_hint"],
         expand=True,
         border_radius=6,
         border_color="#D4DED5",
@@ -393,7 +509,7 @@ def main(page: ft.Page):
     assignment_list = ft.Column(spacing=0)
     assignment_count = ft.Text(color=MUTED, size=12)
     calendar_event_input = ft.TextField(
-        hint_text="予定を入力",
+        hint_text=UI_LABELS[ui_mode]["event_hint"],
         expand=True,
         border_radius=6,
         border_color="#D4DED5",
@@ -405,17 +521,22 @@ def main(page: ft.Page):
     calendar_event_status = ft.Text(size=12, color=MUTED)
     calendar_event_list = ft.Column(spacing=12, scroll=ft.ScrollMode.AUTO)
     calendar_selected_date = ft.Text(size=13, color=GREEN)
+    calendar_back_button = ft.TextButton(
+        UI_LABELS[ui_mode]["back"],
+        icon=ft.Icons.ARROW_BACK,
+        on_click=lambda event: show_home(),
+    )
     task_list = ft.Column(spacing=0)
     task_count = ft.Text(color=MUTED, size=12)
     daily_challenge_text = ft.Text(
-        daily_challenge_for(daily_challenge_date),
+        daily_challenge_for(daily_challenge_date, ui_mode),
         size=15,
         color=INK,
         weight=ft.FontWeight.W_600,
     )
     daily_challenge_status = ft.Text(size=12, color=MUTED)
     daily_challenge_button = ft.Button(
-        "計画に追加",
+        UI_LABELS[ui_mode]["add_challenge"],
         bgcolor=GREEN,
         color="white",
     )
@@ -423,19 +544,24 @@ def main(page: ft.Page):
     section_title = ft.Text(size=38, color=INK, weight=ft.FontWeight.W_600)
     section_description = ft.Text(size=13, color=MUTED)
     clear_done_button = ft.TextButton(
-        "完了した項目を削除",
+        UI_LABELS[ui_mode]["clear_done"],
         icon=ft.Icons.DELETE_OUTLINE,
         style=ft.ButtonStyle(color=CORAL),
         on_click=lambda event: clear_done(event),
     )
     filter_buttons = {}
+    plan_back_button = ft.TextButton(
+        UI_LABELS[ui_mode]["back"],
+        icon=ft.Icons.ARROW_BACK,
+        on_click=lambda event: show_home(),
+    )
 
     def persist():
         try:
             save_tasks(tasks)
-            progress_label.value = f"{sum(task['done'] for task in tasks)} / {len(tasks)} 件 完了"
+            progress_label.value = (f"{sum(task['done'] for task in tasks)} / {len(tasks)} completed" if ui_mode == "en" else f"{sum(task['done'] for task in tasks)} / {len(tasks)} 件かんりょう" if ui_mode == "hiragana" else f"{sum(task['done'] for task in tasks)} / {len(tasks)} 件 完了")
         except OSError:
-            progress_label.value = "保存できませんでした。書き込み権限をご確認ください。"
+            progress_label.value = ("Could not save. Please check write permissions." if ui_mode == "en" else "ほぞんできませんでした。書き込みけんげんを確認してください。" if ui_mode == "hiragana" else "保存できませんでした。書き込み権限をご確認ください。")
 
     def set_filter(value):
         nonlocal current_filter
@@ -550,17 +676,17 @@ def main(page: ft.Page):
         home_today.value = today.value
         if current_date != daily_challenge_date:
             daily_challenge_date = current_date
-            daily_challenge_text.value = daily_challenge_for(current_date)
+            daily_challenge_text.value = daily_challenge_for(current_date, ui_mode)
 
         challenge_added = any(
             task["text"] == daily_challenge_text.value for task in tasks
         )
         daily_challenge_status.value = (
-            "今日の計画に追加済みです。"
+            ("Already added to today's plan." if ui_mode == "en" else "きょうのけいかくについかずみです。" if ui_mode == "hiragana" else "今日の計画に追加済みです。")
             if challenge_added
-            else "今日の学習に、ひとつ挑戦してみましょう。"
+            else ("Try one new learning challenge today." if ui_mode == "en" else "きょうのがくしゅうに、ひとつちょうせんしてみよう。" if ui_mode == "hiragana" else "今日の学習に、ひとつ挑戦してみましょう。")
         )
-        daily_challenge_button.text = "追加済み" if challenge_added else "計画に追加"
+        daily_challenge_button.text = (UI_LABELS[ui_mode]["challenge_added"] if challenge_added else UI_LABELS[ui_mode]["add_challenge"])
         daily_challenge_button.disabled = challenge_added
 
         visible_tasks = [
@@ -572,13 +698,14 @@ def main(page: ft.Page):
         ]
         remaining = sum(not task["done"] for task in tasks)
         completed = len(tasks) - remaining
-        task_count.value = f"未完了 {remaining} 件"
+        task_count.value = (f"Incomplete {remaining}" if ui_mode == "en" else f"みかんりょう {remaining}件" if ui_mode == "hiragana" else f"未完了 {remaining} 件")
         progress_label.value = (
-            f"{completed} / {len(tasks)} 件 完了" if tasks else "タスクはまだありません"
+            (f"{completed} / {len(tasks)} completed" if ui_mode == "en" else f"{completed} / {len(tasks)} 件かんりょう" if ui_mode == "hiragana" else f"{completed} / {len(tasks)} 件 完了") if tasks else ("No tasks yet" if ui_mode == "en" else "タスクはまだありません" if ui_mode == "ja" else "タスクはまだありません")
         )
         clear_done_button.visible = completed > 0 and current_section == "plan"
 
         for key, button in filter_buttons.items():
+            button.text = UI_LABELS[ui_mode][key]
             selected = key == current_filter
             button.style = ft.ButtonStyle(
                 color=GREEN if selected else MUTED,
@@ -603,7 +730,7 @@ def main(page: ft.Page):
             delete_button = ft.IconButton(
                 icon=ft.Icons.DELETE_OUTLINE,
                 icon_color=MUTED,
-                tooltip=f"「{task['text']}」を削除",
+                tooltip=f"{task['text']} - {UI_LABELS[ui_mode]['delete']}" if ui_mode == "en" else f"「{task['text']}」を削除",
                 on_click=lambda event, task_id=task["id"]: delete_task(task_id),
             )
             rows.extend(
@@ -615,11 +742,11 @@ def main(page: ft.Page):
 
         if not visible_tasks:
             empty_text = (
-                "未完了のタスクはありません。いい調子！"
+                ("No incomplete tasks. Nice work!" if ui_mode == "en" else "みかんりょうのタスクはありません。いいちょうし！" if ui_mode == "hiragana" else "未完了のタスクはありません。いい調子！")
                 if current_filter == "active" and tasks
-                else "完了したタスクはまだありません。"
+                else ("No completed tasks yet." if ui_mode == "en" else "かんりょうしたタスクはまだありません。" if ui_mode == "hiragana" else "完了したタスクはまだありません。")
                 if current_filter == "done" and tasks
-                else "まずは、やることをひとつ書いてみましょう。"
+                else ("Start by writing down one thing to do." if ui_mode == "en" else "まずは、やることをひとつ書いてみよう。" if ui_mode == "hiragana" else "まずは、やることをひとつ書いてみましょう。")
             )
             rows = [
                 ft.Container(
@@ -642,7 +769,9 @@ def main(page: ft.Page):
     def render_assignments():
         remaining = sum(not assignment["done"] for assignment in assignments)
         assignment_count.value = (
-            f"未完了 {remaining} 件 / 合計 {len(assignments)} 件"
+            f"Incomplete {remaining} / Total {len(assignments)}" if ui_mode == "en"
+            else f"みかんりょう {remaining}件 / ごうけい {len(assignments)}件" if ui_mode == "hiragana"
+            else f"未完了 {remaining} 件 / 合計 {len(assignments)} 件"
         )
         assignment_list.controls = (
             [
@@ -671,7 +800,7 @@ def main(page: ft.Page):
                                 ft.IconButton(
                                     icon=ft.Icons.DELETE_OUTLINE,
                                     icon_color=MUTED,
-                                    tooltip=f"「{assignment['text']}」を削除",
+                                    tooltip=f"{assignment['text']} - {UI_LABELS[ui_mode]['delete']}" if ui_mode == "en" else f"「{assignment['text']}」を削除",
                                     on_click=lambda event, assignment_id=assignment["id"]: delete_assignment(
                                         assignment_id
                                     ),
@@ -688,7 +817,7 @@ def main(page: ft.Page):
             or [
                 ft.Container(
                     content=ft.Text(
-                        "課題はまだありません。課題名を入力して追加しましょう。",
+                        ("No assignments yet. Enter an assignment name to add it." if ui_mode == "en" else "かだいはまだありません。かだいめいを入力してついかしましょう。" if ui_mode == "hiragana" else "課題はまだありません。課題名を入力して追加しましょう。"),
                         size=13,
                         color=MUTED,
                         text_align=ft.TextAlign.CENTER,
@@ -700,7 +829,8 @@ def main(page: ft.Page):
         )
         page.update()
 
-    for key, label in (("all", "すべて"), ("active", "未完了"), ("done", "完了")):
+    for key in ("all", "active", "done"):
+        label = UI_LABELS[ui_mode][key]
         filter_buttons[key] = ft.TextButton(
             label,
             on_click=lambda event, value=key: set_filter(value),
@@ -730,23 +860,26 @@ def main(page: ft.Page):
         motivation_text.value = random.choice(choices or comments)
         page.update()
 
+    motivation_title_text = ft.Text(UI_LABELS[ui_mode]["motivation_title"], size=12, color=GREEN)
+    motivation_refresh_button = ft.IconButton(
+        icon=ft.Icons.REFRESH,
+        icon_color=GREEN,
+        tooltip=UI_LABELS[ui_mode]["motivation_refresh"],
+        on_click=lambda event: show_random_motivation(event),
+    )
+
     motivation_panel = ft.Container(
         content=ft.Row(
             [
                 ft.Column(
                     [
-                        ft.Text("今日の応援コメント", size=12, color=GREEN),
+                        motivation_title_text,
                         motivation_text,
                     ],
                     spacing=6,
                     expand=True,
                 ),
-                ft.IconButton(
-                    icon=ft.Icons.REFRESH,
-                    icon_color=GREEN,
-                    tooltip="別のコメントを見る",
-                    on_click=show_random_motivation,
-                ),
+                motivation_refresh_button,
             ],
             vertical_alignment=ft.CrossAxisAlignment.CENTER,
         ),
@@ -754,17 +887,18 @@ def main(page: ft.Page):
         bgcolor=GREEN_LIGHT,
         border_radius=8,
     )
+    task_add_button = ft.Button(
+        UI_LABELS[ui_mode]["add"],
+        on_click=add_task,
+        bgcolor=GREEN,
+        color="white",
+        height=48,
+        style=ft.ButtonStyle(shape=ft.RoundedRectangleBorder(radius=5)),
+    )
     composer = ft.Row(
         [
             task_input,
-            ft.Button(
-                "追加  ＋",
-                on_click=add_task,
-                bgcolor=GREEN,
-                color="white",
-                height=48,
-                style=ft.ButtonStyle(shape=ft.RoundedRectangleBorder(radius=5)),
-            ),
+            task_add_button,
         ],
         spacing=10,
     )
@@ -777,21 +911,28 @@ def main(page: ft.Page):
         padding=ft.Padding(left=18, right=18, top=8, bottom=8),
         border=ft.Border.only(bottom=ft.BorderSide(1, "#DEDFD5")),
     )
+    assignment_add_title_text = ft.Text(
+        UI_LABELS[ui_mode]["assignment_add_title"],
+        size=16,
+        color=INK,
+        weight=ft.FontWeight.W_600,
+    )
+    assignment_add_button = ft.Button(
+        UI_LABELS[ui_mode]["add"],
+        on_click=add_assignment,
+        bgcolor=GREEN,
+        color="white",
+        height=48,
+        style=ft.ButtonStyle(shape=ft.RoundedRectangleBorder(radius=5)),
+    )
     assignment_composer = ft.Container(
         content=ft.Column(
             [
-                ft.Text("自分の課題を追加", size=16, color=INK, weight=ft.FontWeight.W_600),
+                assignment_add_title_text,
                 ft.Row(
                     [
                         assignment_input,
-                        ft.Button(
-                            "追加  ＋",
-                            on_click=add_assignment,
-                            bgcolor=GREEN,
-                            color="white",
-                            height=48,
-                            style=ft.ButtonStyle(shape=ft.RoundedRectangleBorder(radius=5)),
-                        ),
+                        assignment_add_button,
                     ],
                     spacing=10,
                 ),
@@ -820,17 +961,18 @@ def main(page: ft.Page):
         visible=False,
     )
 
+    daily_challenge_title_text = ft.Text(
+        UI_LABELS[ui_mode]["random_challenge"],
+        size=12,
+        color=GREEN,
+        weight=ft.FontWeight.W_600,
+    )
     task_panel = ft.Column(
         [
             ft.Container(
                 content=ft.Column(
                     [
-                        ft.Text(
-                            "今日のランダム課題",
-                            size=12,
-                            color=GREEN,
-                            weight=ft.FontWeight.W_600,
-                        ),
+                        daily_challenge_title_text,
                         daily_challenge_text,
                         ft.Row(
                             [daily_challenge_button],
@@ -865,11 +1007,7 @@ def main(page: ft.Page):
         [
             ft.Row(
                 [
-                    ft.TextButton(
-                        "ホームに戻る",
-                        icon=ft.Icons.ARROW_BACK,
-                        on_click=lambda event: show_home(),
-                    )
+                    plan_back_button
                 ]
             ),
             ft.Row(
@@ -929,17 +1067,17 @@ def main(page: ft.Page):
     )
     stopwatch_message = ft.Text(size=13, color=MUTED, text_align=ft.TextAlign.CENTER)
     stopwatch_start_pause_button = ft.Button(
-        "スタート",
+        UI_LABELS[ui_mode]["start"],
         on_click=lambda event: toggle_stopwatch(),
         bgcolor=GREEN,
         color="white",
     )
     stopwatch_stop_button = ft.Button(
-        "リセット",
+        UI_LABELS[ui_mode]["reset"],
         on_click=lambda event: stop_stopwatch(),
     )
     stopwatch_lap_button = ft.Button(
-        "ラップ",
+        UI_LABELS[ui_mode]["lap"],
         on_click=lambda event: lap_stopwatch(),
     )
     stopwatch_lap_list = ft.Column(
@@ -947,17 +1085,17 @@ def main(page: ft.Page):
         horizontal_alignment=ft.CrossAxisAlignment.STRETCH,
     )
     stopwatch_home_button = ft.TextButton(
-        "ホームに戻る",
+        UI_LABELS[ui_mode]["back"],
         icon=ft.Icons.ARROW_BACK,
         on_click=lambda event: show_home(),
     )
+    stopwatch_mode_stopwatch = ft.TextButton(UI_LABELS[ui_mode]["stopwatch"], on_click=lambda event: show_stopwatch_mode())
+    stopwatch_mode_timer = ft.TextButton(UI_LABELS[ui_mode]["timer"], on_click=lambda event: show_timer_mode())
     stopwatch_mode_row = ft.Row(
-        [
-            ft.TextButton("ストップウォッチ", on_click=lambda event: show_stopwatch_mode()),
-            ft.TextButton("タイマー", on_click=lambda event: show_timer_mode()),
-        ],
+        [stopwatch_mode_stopwatch, stopwatch_mode_timer],
         spacing=8,
     )
+    stopwatch_title_text = ft.Text(UI_LABELS[ui_mode]["stopwatch"], size=28, color=INK, weight=ft.FontWeight.W_600)
     stopwatch_container = ft.Container(
         content=ft.Column(
             [
@@ -966,7 +1104,7 @@ def main(page: ft.Page):
                 ft.Container(
                     content=ft.Column(
                         [
-                            ft.Text("ストップウォッチ", size=28, color=INK, weight=ft.FontWeight.W_600),
+                            stopwatch_title_text,
                             stopwatch_display,
                             stopwatch_message,
                             ft.Row(
@@ -1042,27 +1180,27 @@ def main(page: ft.Page):
         color=MUTED,
         text_align=ft.TextAlign.CENTER,
     )
+    timer_mode_stopwatch = ft.TextButton(UI_LABELS[ui_mode]["stopwatch"], on_click=lambda event: show_stopwatch_mode())
+    timer_mode_timer = ft.TextButton(UI_LABELS[ui_mode]["timer"], on_click=lambda event: show_timer_mode())
     timer_mode_row = ft.Row(
-        [
-            ft.TextButton("ストップウォッチ", on_click=lambda event: show_stopwatch_mode()),
-            ft.TextButton("タイマー", on_click=lambda event: show_timer_mode()),
-        ],
+        [timer_mode_stopwatch, timer_mode_timer],
         spacing=8,
     )
     timer_home_button = ft.TextButton(
-        "ホームに戻る",
+        UI_LABELS[ui_mode]["back"],
         icon=ft.Icons.ARROW_BACK,
         on_click=lambda event: show_home(),
     )
     timer_toggle_button = ft.Button(
-        "タイマー開始",
+        UI_LABELS[ui_mode]["timer_start"],
         bgcolor=GREEN,
         color="white",
     )
-    timer_reset_button = ft.Button("リセット")
+    timer_reset_button = ft.Button(UI_LABELS[ui_mode]["reset"])
     timer_alarm_stop_button = ft.Button(
-        "アラーム停止",
+        UI_LABELS[ui_mode]["alarm_stop"],
     )
+    timer_title_text = ft.Text(UI_LABELS[ui_mode]["timer"], size=28, color=INK, weight=ft.FontWeight.W_600)
     timer_container = ft.Container(
         content=ft.Column(
             [
@@ -1071,7 +1209,7 @@ def main(page: ft.Page):
                 ft.Container(
                     content=ft.Column(
                         [
-                            ft.Text("タイマー", size=28, color=INK, weight=ft.FontWeight.W_600),
+                            timer_title_text,
                             timer_input_row,
                             timer_display,
                             timer_message,
@@ -1117,15 +1255,15 @@ def main(page: ft.Page):
         stopwatch_home_button.visible = not stopwatch_running
         stopwatch_mode_row.visible = not stopwatch_running
         stopwatch_start_pause_button.text = (
-            "一時停止" if stopwatch_running else "再開" if stopwatch_elapsed else "スタート"
+            UI_LABELS[ui_mode]["pause"] if stopwatch_running else UI_LABELS[ui_mode]["resume"] if stopwatch_elapsed else UI_LABELS[ui_mode]["start"]
         )
         stopwatch_lap_button.visible = stopwatch_running or stopwatch_elapsed > 0
         stopwatch_stop_button.visible = not stopwatch_running
-        stopwatch_stop_button.text = "リセット"
+        stopwatch_stop_button.text = UI_LABELS[ui_mode]["reset"]
         stopwatch_message.value = (
-            "計測中は一時停止とラップ以外の操作ができません。"
+            ("Only pause and lap are available while measuring." if ui_mode == "en" else "けいそくちゅうは、一時停止とラップ以外の操作ができません。" if ui_mode == "hiragana" else "計測中は一時停止とラップ以外の操作ができません。")
             if stopwatch_running
-            else "計測中は画面がロックされます。"
+            else ("The screen is locked while measuring." if ui_mode == "en" else "けいそくちゅうは画面がロックされます。" if ui_mode == "hiragana" else "計測中は画面がロックされます。")
         )
         stopwatch_lap_list.controls.clear()
         stopwatch_lap_list.visible = bool(stopwatch_laps)
@@ -1134,7 +1272,7 @@ def main(page: ft.Page):
                 ft.Container(
                     content=ft.Row(
                         [
-                            ft.Text(f"ラップ {lap_number}", size=14, color=INK),
+                            ft.Text(f"{UI_LABELS[ui_mode]['lap']} {lap_number}", size=14, color=INK),
                             ft.Text(format_stopwatch(lap_duration), size=14, color=MUTED),
                             ft.Text(format_stopwatch(lap_elapsed), size=14, color=GREEN, weight=ft.FontWeight.W_600),
                         ],
@@ -1173,17 +1311,17 @@ def main(page: ft.Page):
         timer_display.visible = timer_remaining is not None or timer_running
         timer_toggle_button.visible = not timer_alarm_active
         timer_toggle_button.text = (
-            "タイマー停止"
+            UI_LABELS[ui_mode]["timer_stop"]
             if timer_running
-            else "再開"
+            else UI_LABELS[ui_mode]["resume"]
             if timer_remaining is not None and timer_remaining > 0
-            else "タイマー開始"
+            else UI_LABELS[ui_mode]["timer_start"]
         )
         timer_reset_button.visible = not timer_running and not timer_alarm_active
         timer_alarm_stop_button.visible = timer_alarm_active
         if timer_running:
             timer_message.value = (
-                "タイマー動作中は「タイマー停止」以外の操作ができません。"
+                UI_LABELS[ui_mode]["timer_running"]
                 if timer_audio_available
                 else "音声機能が利用できないため、タイマーは音声なしで動作しています。"
             )
@@ -1302,7 +1440,7 @@ def main(page: ft.Page):
             timer_started_at = None
             timer_running = False
             timer_generation += 1
-            timer_message.value = "一時停止中です。再開するか、リセットできます。"
+            timer_message.value = UI_LABELS[ui_mode]["timer_paused"]
             render_timer()
             page.run_task(run_timer_audio_command, ambient_audio, "pause")
             return
@@ -1319,7 +1457,7 @@ def main(page: ft.Page):
         timer_running = True
         timer_generation += 1
         generation = timer_generation
-        timer_message.value = "タイマー動作中は「タイマー停止」以外の操作ができません。"
+        timer_message.value = UI_LABELS[ui_mode]["timer_running"]
         render_timer()
         page.run_task(update_timer, generation)
         page.run_task(run_timer_audio_command, ambient_audio, "play")
@@ -1348,9 +1486,11 @@ def main(page: ft.Page):
                 if timer_alarm_active:
                     timer_alarm_active = False
                     timer_message.value = (
-                        "タイマーが終了しました。"
-                        if timer_audio_available
-                        else "タイマーが終了しました（音声なし）。"
+                        ("The timer has finished." if timer_audio_available else "The timer has finished (without sound).")
+                        if ui_mode == "en"
+                        else ("タイマーがしゅうりょうしました。" if timer_audio_available else "タイマーがしゅうりょうしました（おんせいなし）。")
+                        if ui_mode == "hiragana"
+                        else (UI_LABELS["ja"]["timer_finished"] if timer_audio_available else "タイマーが終了しました（音声なし）。")
                     )
                     render_timer()
                 return
@@ -1369,7 +1509,7 @@ def main(page: ft.Page):
         timer_hours_input.value = "00"
         timer_minutes_input.value = "00"
         timer_seconds_input.value = "00"
-        timer_message.value = "時間を設定してタイマーを開始してください。"
+        timer_message.value = UI_LABELS[ui_mode]["set_timer"]
         render_timer()
         if alarm_was_active:
             page.run_task(run_timer_audio_command, alarm_audio, "pause")
@@ -1377,7 +1517,7 @@ def main(page: ft.Page):
     async def stop_timer_alarm(event):
         nonlocal timer_alarm_active
         timer_alarm_active = False
-        timer_message.value = "タイマーが終了しました。"
+        timer_message.value = UI_LABELS[ui_mode]["timer_finished"]
         render_timer()
         page.run_task(run_timer_audio_command, alarm_audio, "pause")
 
@@ -1476,6 +1616,15 @@ def main(page: ft.Page):
         calendar_event_status.color = GREEN
         render_calendar()
 
+    calendar_add_button = ft.Button(
+        UI_LABELS[ui_mode]["add_event"],
+        on_click=add_calendar_event,
+        bgcolor=GREEN,
+        color="white",
+        height=48,
+        style=ft.ButtonStyle(shape=ft.RoundedRectangleBorder(radius=5)),
+    )
+
     def render_calendar():
         if ui_mode == "en":
             month_text = visible_month.strftime("%B %Y")
@@ -1497,7 +1646,7 @@ def main(page: ft.Page):
                     alignment=ft.Alignment.CENTER,
                     padding=8,
                 )
-                for index, label in enumerate(("月", "火", "水", "木", "金", "土", "日"))
+                for index, label in enumerate(("Mon", "Tue", "Wed", "Thu", "Fri", "Sat", "Sun") if ui_mode == "en" else ("げつ", "か", "すい", "もく", "きん", "ど", "にち") if ui_mode == "hiragana" else ("月", "火", "水", "木", "金", "土", "日"))
             ],
             spacing=0,
         )
@@ -1566,7 +1715,7 @@ def main(page: ft.Page):
                 )
                 for event in selected_events
             ]
-            or [ft.Text("この日の予定はありません。", size=18, color=MUTED)]
+            or [ft.Text(UI_LABELS[ui_mode]["no_events"], size=18, color=MUTED)]
         )
 
         calendar_panel = ft.Container(
@@ -1601,7 +1750,7 @@ def main(page: ft.Page):
         calendar_event_bubble = ft.Container(
             content=ft.Column(
                 [
-                    ft.Text("選択日の予定", size=18, color=INK, weight=ft.FontWeight.W_600),
+                    ft.Text(UI_LABELS[ui_mode]["selected_events"], size=18, color=INK, weight=ft.FontWeight.W_600),
                     calendar_selected_date,
                     ft.Divider(height=1, color="#C8D9CC"),
                     calendar_event_list,
@@ -1637,11 +1786,7 @@ def main(page: ft.Page):
             )
         calendar_content = ft.Column(
             [
-                ft.TextButton(
-                    "ホームに戻る",
-                    icon=ft.Icons.ARROW_BACK,
-                    on_click=lambda event: show_home(),
-                ),
+                calendar_back_button,
                 ft.Row(
                     [
                         ft.Row(
@@ -1673,14 +1818,7 @@ def main(page: ft.Page):
                 ft.Row(
                     [
                         calendar_event_input,
-                        ft.Button(
-                            "予定を追加",
-                            on_click=add_calendar_event,
-                            bgcolor=GREEN,
-                            color="white",
-                            height=48,
-                            style=ft.ButtonStyle(shape=ft.RoundedRectangleBorder(radius=5)),
-                        ),
+                        calendar_add_button,
                     ],
                     spacing=10,
                 ),
@@ -1760,6 +1898,47 @@ def main(page: ft.Page):
         nonlocal ui_mode
         ui_mode = mode
         labels = UI_LABELS[ui_mode]
+
+        task_input.hint_text = labels["task_hint"]
+        assignment_input.hint_text = labels["assignment_hint"]
+        calendar_event_input.hint_text = labels["event_hint"]
+        task_add_button.text = labels["add"]
+        assignment_add_button.text = labels["add"]
+        calendar_add_button.text = labels["add_event"]
+        motivation_title_text.value = labels["motivation_title"]
+        motivation_refresh_button.tooltip = labels["motivation_refresh"]
+        assignment_add_title_text.value = labels["assignment_add_title"]
+        clear_done_button.text = labels["clear_done"]
+        daily_challenge_title_text.value = labels["random_challenge"]
+        stopwatch_title_text.value = labels["stopwatch"]
+        timer_title_text.value = labels["timer"]
+        daily_challenge_text.value = daily_challenge_for(date.today(), ui_mode)
+        challenge_added = any(task["text"] == daily_challenge_text.value for task in tasks)
+        daily_challenge_button.text = labels["challenge_added"] if challenge_added else labels["add_challenge"]
+        daily_challenge_button.disabled = challenge_added
+        for key, button in filter_buttons.items():
+            button.text = labels[key]
+
+        stopwatch_start_pause_button.text = labels["pause"] if stopwatch_running else labels["resume"] if stopwatch_elapsed else labels["start"]
+        stopwatch_stop_button.text = labels["reset"]
+        stopwatch_lap_button.text = labels["lap"]
+        plan_back_button.text = labels["back"]
+        calendar_back_button.text = labels["back"]
+        stopwatch_home_button.text = labels["back"]
+        stopwatch_mode_stopwatch.text = labels["stopwatch"]
+        stopwatch_mode_timer.text = labels["timer"]
+
+        timer_hours_input.label = labels["hours"]
+        timer_minutes_input.label = labels["minutes"]
+        timer_seconds_input.label = labels["seconds"]
+        timer_reset_button.text = labels["reset"]
+        timer_alarm_stop_button.text = labels["alarm_stop"]
+        timer_home_button.text = labels["back"]
+        timer_mode_stopwatch.text = labels["stopwatch"]
+        timer_mode_timer.text = labels["timer"]
+        timer_toggle_button.text = labels["timer_stop"] if timer_running else labels["resume"] if timer_remaining is not None and timer_remaining > 0 else labels["timer_start"]
+        if timer_remaining is None:
+            timer_message.value = labels["set_timer"]
 
         home_title_text.value = labels["today_title"]
         home_description_text.value = labels["today_description"]
