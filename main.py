@@ -82,6 +82,43 @@ UI_LABELS = {
     },
 }
 
+ENGLISH_MOTIVATION_COMMENTS = (
+    "Take the first step and begin.",
+    "Small progress builds real strength.",
+    "Start with what you can do today.",
+    "Count each thing you complete.",
+    "Move forward at a comfortable pace.",
+    "Make time for focused study.",
+    "It is never too late to begin.",
+    "Solve it one problem at a time.",
+    "Rest is an important part of preparation.",
+    "Take a breath and try again.",
+    "Today's effort supports tomorrow's self.",
+    "What you do not understand is a chance to grow.",
+    "A slow, steady step still moves you forward.",
+    "It is fine to work at your own pace.",
+    "Do not forget your small successes.",
+)
+
+HIRAGANA_MOTIVATION_COMMENTS = (
+    "まずはいっぽ、はじめてみよう。",
+    "ちいさな積み重ねが力になる。",
+    "きょうのじぶんにできることから。",
+    "できたことをひとつずつかぞえてみよう。",
+    "むりせず、でも前へすすもう。",
+    "しゅうちゅうできる時間をたいせつに。",
+    "いまからはじめるのにおそすぎない。",
+    "いちもんずつならすすめられる。",
+    "休むこともたいせつなじゅんび。",
+    "ふかくこきゅうして、もういちど。",
+    "きょうの努力はあしたのじぶんを支える。",
+    "わからないところがせいちょうの入口。",
+    "ゆっくりでもたしかないっぽ。",
+    "じぶんのペースで進んでいい。",
+    "ちいさなせいこうをわすれずに。",
+    "がんばるっぽよ。もち猫より",
+)
+
 MOTIVATION_COMMENTS = (
     "まずは一歩、始めてみよう。",
     "小さな積み重ねが力になる。",
@@ -141,6 +178,22 @@ DAILY_CHALLENGE_SUBJECTS = (
     "理科",
     "社会",
 )
+
+
+def format_today_date(day, mode):
+    if mode == "en":
+        return day.strftime("%B %d, %Y")
+    if mode == "hiragana":
+        return f"{day.year}ねん{day.month}がつ{day.day}にち"
+    return day.strftime("%Y年%m月%d日")
+
+
+def motivation_comments_for(mode):
+    if mode == "en":
+        return ENGLISH_MOTIVATION_COMMENTS
+    if mode == "hiragana":
+        return HIRAGANA_MOTIVATION_COMMENTS
+    return MOTIVATION_COMMENTS
 
 
 def daily_challenge_for(day):
@@ -493,7 +546,7 @@ def main(page: ft.Page):
     def render():
         nonlocal daily_challenge_date
         current_date = date.today()
-        today.value = current_date.strftime("%Y年%m月%d日")
+        today.value = format_today_date(current_date, ui_mode)
         home_today.value = today.value
         if current_date != daily_challenge_date:
             daily_challenge_date = current_date
@@ -654,7 +707,7 @@ def main(page: ft.Page):
         )
 
     today = ft.Text(
-        date.today().strftime("%Y年%m月%d日"),
+        format_today_date(date.today(), ui_mode),
         size=12,
         color=MUTED,
     )
@@ -668,12 +721,13 @@ def main(page: ft.Page):
     )
 
     def show_random_motivation(event):
+        comments = motivation_comments_for(ui_mode)
         choices = [
             comment
-            for comment in MOTIVATION_COMMENTS
+            for comment in comments
             if comment != motivation_text.value
         ]
-        motivation_text.value = random.choice(choices or MOTIVATION_COMMENTS)
+        motivation_text.value = random.choice(choices or comments)
         page.update()
 
     motivation_panel = ft.Container(
@@ -1423,8 +1477,14 @@ def main(page: ft.Page):
         render_calendar()
 
     def render_calendar():
+        if ui_mode == "en":
+            month_text = visible_month.strftime("%B %Y")
+        elif ui_mode == "hiragana":
+            month_text = f"{visible_month.year}ねん{visible_month.month}がつ"
+        else:
+            month_text = visible_month.strftime("%Y年 %m月")
         month_label = ft.Text(
-            visible_month.strftime("%Y年 %m月"),
+            month_text,
             size=22,
             color=INK,
             weight=ft.FontWeight.BOLD,
@@ -1483,7 +1543,13 @@ def main(page: ft.Page):
             weeks.append(ft.Row(day_cells, spacing=0))
 
         selected_events = [event for event in events if event["date"] == selected_date.isoformat()]
-        calendar_selected_date.value = f"{selected_date.strftime('%Y年%m月%d日')} の予定"
+        if ui_mode == "en":
+            selected_date_text = f"Schedule for {selected_date.strftime('%B %d, %Y')}"
+        elif ui_mode == "hiragana":
+            selected_date_text = f"{selected_date.year}ねん{selected_date.month}がつ{selected_date.day}にち のよてい"
+        else:
+            selected_date_text = f"{selected_date.strftime('%Y年%m月%d日')} の予定"
+        calendar_selected_date.value = selected_date_text
         calendar_event_list.controls = (
             [
                 ft.Row(
@@ -1697,6 +1763,11 @@ def main(page: ft.Page):
 
         home_title_text.value = labels["today_title"]
         home_description_text.value = labels["today_description"]
+        today.value = format_today_date(date.today(), ui_mode)
+        home_today.value = today.value
+        comments = motivation_comments_for(ui_mode)
+        choices = [comment for comment in comments if comment != motivation_text.value]
+        motivation_text.value = random.choice(choices or comments)
 
         home_card_text = {
             "plan": (labels["plan"], UI_LABELS["ja"]["plan_description"] if ui_mode == "ja" else labels["plan_description"]),
