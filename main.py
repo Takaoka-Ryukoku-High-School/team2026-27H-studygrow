@@ -25,6 +25,63 @@ PAPER = "#F6F5EF"
 INK = "#202C2A"
 MUTED = "#77807B"
 CORAL = "#CF6048"
+UI_LABELS = {
+    "ja": {
+        "home": "ホーム",
+        "plan": "学習計画",
+        "assignments": "課題",
+        "calendar": "カレンダー",
+        "stopwatch": "ストップウォッチ",
+        "timer": "タイマー",
+        "back": "ホームに戻る",
+        "open": "開く",
+        "english": "English",
+        "hiragana": "ひらがな",
+        "japanese": "日本語",
+        "mode": "表示モード",
+        "today_title": "今日の学びを、ここから。",
+        "today_description": "やりたいことを選んで、学習を始めましょう。",
+        "plan_description": "ひとつずつ、今日の学びを進めよう。",
+        "assignments_description": "自分の課題を追加し、完了状況を管理しましょう。",
+    },
+    "en": {
+        "home": "Home",
+        "plan": "Study Plan",
+        "assignments": "Assignments",
+        "calendar": "Calendar",
+        "stopwatch": "Stopwatch",
+        "timer": "Timer",
+        "back": "Back to Home",
+        "open": "Open",
+        "english": "English",
+        "hiragana": "Hiragana",
+        "japanese": "Japanese",
+        "mode": "Display mode",
+        "today_title": "Start today's learning here.",
+        "today_description": "Choose what you want to do and begin learning.",
+        "plan_description": "Move forward with today's learning, one step at a time.",
+        "assignments_description": "Add assignments and manage their completion status.",
+    },
+    "hiragana": {
+        "home": "ほーむ",
+        "plan": "がくしゅうけいかく",
+        "assignments": "かだい",
+        "calendar": "かれんだー",
+        "stopwatch": "ストップウォッチ",
+        "timer": "たいまー",
+        "back": "ほーむにもどる",
+        "open": "ひらく",
+        "english": "えいご",
+        "hiragana": "ひらがな",
+        "japanese": "にほんご",
+        "mode": "ひょうじモード",
+        "today_title": "きょうの学びを、ここから。",
+        "today_description": "やりたいことをえらんで、学習をはじめましょう。",
+        "plan_description": "ひとつずつ、きょうの学びをすすめよう。",
+        "assignments_description": "じぶんのかだいをついかして、できたかをかんりしましょう。",
+    },
+}
+
 MOTIVATION_COMMENTS = (
     "まずは一歩、始めてみよう。",
     "小さな積み重ねが力になる。",
@@ -228,6 +285,7 @@ def main(page: ft.Page):
     current_filter = "all"
     current_section = "plan"
     daily_challenge_date = date.today()
+    ui_mode = "ja"
     visible_month = date.today().replace(day=1)
     selected_date = date.today()
     stopwatch_running = False
@@ -1033,7 +1091,7 @@ def main(page: ft.Page):
                     border_radius=6,
                 )
             )
-        page.title = "ストップウォッチ | StudyGrow"
+        page.title = f"{UI_LABELS[ui_mode]['stopwatch']} | StudyGrow"
         page.controls.clear()
         page.add(stopwatch_container)
         page.update()
@@ -1075,7 +1133,7 @@ def main(page: ft.Page):
                 if timer_audio_available
                 else "音声機能が利用できないため、タイマーは音声なしで動作しています。"
             )
-        page.title = "タイマー | StudyGrow"
+        page.title = f"{UI_LABELS[ui_mode]['timer']} | StudyGrow"
         page.controls.clear()
         page.add(timer_container)
         page.update()
@@ -1276,7 +1334,7 @@ def main(page: ft.Page):
     def show_home():
         if stopwatch_running or timer_running:
             return
-        page.title = "StudyGrow | ホーム"
+        page.title = f"StudyGrow | {UI_LABELS[ui_mode]['home']}"
         page.controls.clear()
         page.add(home_container)
         page.update()
@@ -1292,22 +1350,25 @@ def main(page: ft.Page):
         composer_panel.visible = section == "plan"
         filter_panel.visible = section == "plan"
         if section == "plan":
-            page.title = "学習計画 | StudyGrow"
-            section_title.value = "学習計画"
-            section_description.value = "ひとつずつ、今日の学びを進めよう。"
+            labels = UI_LABELS[ui_mode]
+            page.title = f"{labels['plan']} | StudyGrow"
+            section_title.value = labels["plan"]
+            section_description.value = labels["plan_description"]
             page.controls.clear()
             page.add(app_container)
             render()
         elif section == "assignments":
-            page.title = "課題 | StudyGrow"
-            section_title.value = "課題"
-            section_description.value = "自分の課題を追加し、完了状況を管理しましょう。"
+            labels = UI_LABELS[ui_mode]
+            page.title = f"{labels['assignments']} | StudyGrow"
+            section_title.value = labels["assignments"]
+            section_description.value = labels["assignments_description"]
             page.controls.clear()
             page.add(app_container)
             render_assignments()
         elif section == "calendar":
-            page.title = "カレンダー | StudyGrow"
-            section_title.value = "カレンダー"
+            labels = UI_LABELS[ui_mode]
+            page.title = f"{labels['calendar']} | StudyGrow"
+            section_title.value = labels["calendar"]
             section_description.value = ""
             page.controls.clear()
             page.add(calendar_container)
@@ -1537,7 +1598,7 @@ def main(page: ft.Page):
                 ),
                 ft.Column(
                     [
-                        ft.Text("カレンダー", size=38, color=INK, weight=ft.FontWeight.W_600),
+                        ft.Text(UI_LABELS[ui_mode]["calendar"], size=38, color=INK, weight=ft.FontWeight.W_600),
                         ft.Text("", size=13, color=MUTED),
                     ],
                     spacing=4,
@@ -1566,7 +1627,13 @@ def main(page: ft.Page):
         calendar_container.width = calendar_content_width
         page.update()
 
+    home_card_labels = {}
+
     def make_home_card(number, icon, title, description, section):
+        title_text = ft.Text(title, size=18, color=INK, weight=ft.FontWeight.W_600)
+        description_text = ft.Text(description, size=12, color=MUTED)
+        open_text = ft.Text("開く", size=13, color=GREEN, weight=ft.FontWeight.W_600)
+        home_card_labels[section] = (title_text, description_text, open_text)
         return ft.Container(
             content=ft.Column(
                 [
@@ -1584,11 +1651,11 @@ def main(page: ft.Page):
                         ],
                         alignment=ft.MainAxisAlignment.SPACE_BETWEEN,
                     ),
-                    ft.Text(title, size=18, color=INK, weight=ft.FontWeight.W_600),
-                    ft.Text(description, size=12, color=MUTED),
+                    title_text,
+                    description_text,
                     ft.Row(
                         [
-                            ft.Text("開く", size=13, color=GREEN, weight=ft.FontWeight.W_600),
+                            open_text,
                             ft.Icon(ft.Icons.ARROW_FORWARD, size=16, color=GREEN),
                         ],
                         alignment=ft.MainAxisAlignment.SPACE_BETWEEN,
@@ -1615,6 +1682,86 @@ def main(page: ft.Page):
         run_spacing=12,
         breakpoints={"xs": 0, "sm": 600},
     )
+    home_title_text = ft.Text("今日の学びを、ここから。", size=32, color=INK, weight=ft.FontWeight.W_600)
+    home_description_text = ft.Text(
+        "やりたいことを選んで、学習を始めましょう。",
+        size=14,
+        color=MUTED,
+    )
+    mode_buttons = {}
+
+    def set_ui_mode(mode):
+        nonlocal ui_mode
+        ui_mode = mode
+        labels = UI_LABELS[ui_mode]
+
+        home_title_text.value = labels["today_title"]
+        home_description_text.value = labels["today_description"]
+
+        home_card_text = {
+            "plan": (labels["plan"], UI_LABELS["ja"]["plan_description"] if ui_mode == "ja" else labels["plan_description"]),
+            "assignments": (labels["assignments"], labels["assignments_description"]),
+            "calendar": (labels["calendar"], "月ごとの予定を確認" if ui_mode == "ja" else "Check monthly schedules" if ui_mode == "en" else "つきごとのよていをかくにん"),
+            "stopwatch": (labels["stopwatch"], "学習時間を計測する" if ui_mode == "ja" else "Measure your study time" if ui_mode == "en" else "がくしゅうじかんをけいそくする"),
+        }
+        for section, (title_text, description_text, open_text) in home_card_labels.items():
+            title_text.value, description_text.value = home_card_text[section]
+            open_text.value = labels["open"]
+
+        mode_title_text.value = labels["mode"]
+        for key, button in mode_buttons.items():
+            button.text = labels[mode_label_keys[key]]
+            selected = key == ui_mode
+            button.style = ft.ButtonStyle(
+                color=GREEN if selected else MUTED,
+                bgcolor=GREEN_LIGHT if selected else "transparent",
+                shape=ft.RoundedRectangleBorder(radius=4),
+            )
+
+        page.title = f"{labels['home']} | StudyGrow"
+        if current_section == "plan":
+            section_title.value = labels["plan"]
+            section_description.value = labels["plan_description"]
+        elif current_section == "assignments":
+            section_title.value = labels["assignments"]
+            section_description.value = labels["assignments_description"]
+        elif current_section == "calendar":
+            section_title.value = labels["calendar"]
+
+        if stopwatch_running:
+            render_stopwatch()
+        elif timer_running:
+            render_timer()
+        elif current_section == "calendar":
+            render_calendar()
+        elif current_section == "assignments":
+            render_assignments()
+        else:
+            render()
+            page.update()
+
+    mode_title_text = ft.Text("表示モード", size=12, color=MUTED)
+    mode_label_keys = {
+        "ja": "japanese",
+        "en": "english",
+        "hiragana": "hiragana",
+    }
+    for mode_key, label_key in mode_label_keys.items():
+        mode_buttons[mode_key] = ft.TextButton(
+            UI_LABELS["ja"][label_key],
+            on_click=lambda event, mode=mode_key: set_ui_mode(mode),
+        )
+
+    mode_control = ft.Container(
+        content=ft.Column(
+            [
+                mode_title_text,
+                ft.Row(list(mode_buttons.values()), spacing=4),
+            ],
+            spacing=4,
+        ),
+    )
+
     home_content = ft.Column(
         [
             ft.Row(
@@ -1639,8 +1786,9 @@ def main(page: ft.Page):
             ),
             ft.Column(
                 [
-                    ft.Text("今日の学びを、ここから。", size=32, color=INK, weight=ft.FontWeight.W_600),
-                    ft.Text("やりたいことを選んで、学習を始めましょう。", size=14, color=MUTED),
+                    home_title_text,
+                    home_description_text,
+                    mode_control,
                 ],
                 spacing=6,
             ),
